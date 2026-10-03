@@ -824,7 +824,7 @@ function treatment(s, d, u, res) {
 
   // DKA
   if (s.dka) {
-    T.special.push(`DKA/HHS 且 K ${k} <3.5：先暫緩胰島素，補鉀到 ≥3.5 再開始（2024 ADA/EASD/JBDS/AACE/DTS 共識；UpToDate 用 >3.3）。補鉀速率 20–30 mEq/h（UpToDate）：於 0.45% NaCl 每公升加 KCl 40–60 mEq；需中心靜脈與連續 ECG，每 1–2 h 測 K。`);
+    T.special.push(`DKA/HHS 且 K ${k} <3.5：先暫緩胰島素，補鉀到 >3.5 再開始（2024 ADA/EASD/JBDS/AACE/DTS 共識；UpToDate 用 >3.3）。起始 KCl 10 mmol/h（2024 共識）；K 很低或持續下降時可提高到 20–30 mEq/h（UpToDate：0.45% NaCl 每公升加 KCl 40–60 mEq），此時需中心靜脈與連續 ECG。每 1–2 h 測 K。`);
   }
 
   // K plan

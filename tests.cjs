@@ -140,7 +140,7 @@ t('shift/TPP → low dose, rebound warning, no deficit, propranolol', () => {
   const tx = ev({ k: 1.9, ...SAFE, sym: 'paralysis', h_paralysis: true, h_thyro: true, uk: 5, ucr: 70, hco3: 24, bp: 'low', tsh: 'low' }).tx;
   assert.ok(tx.shiftDom); assert.equal(tx.deficit, null); assert.ok(tx.k.some(x => /反彈/.test(x))); assert.ok(tx.k.some(x => /propranolol/.test(x)));
 });
-t('DKA: K replacement 20–30 mEq/h (UpToDate)', () => assert.ok(ev({ k: 3.1, ...SAFE, dka: true }).tx.special.some(x => /20–30 mEq\/h/.test(x))));
+t('DKA: start 10 mmol/h (2024 consensus), escalate to 20–30 mEq/h (UpToDate)', () => assert.ok(ev({ k: 3.1, ...SAFE, dka: true }).tx.special.some(x => /10 mmol\/h/.test(x) && /20–30 mEq\/h/.test(x))));
 t('DKA with K 3.1 is at least urgent', () => assert.equal(ev({ k: 3.1, ...SAFE, dka: true }).u.lvl, 'urgent'));
 t('DKA: hold insulin while K <3.5',() => assert.ok(ev({ k: 3.1, ...SAFE, dka: true }).tx.special.some(x => /暫緩胰島素/.test(x) && /3\.5/.test(x))));
 t('acidosis → potassium citrate/bicarbonate; correct K before alkali', () => {
