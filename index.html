@@ -1,33 +1,1280 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>低血鉀症互動診斷流程</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="低血鉀症逐步引導：初次接觸只需血清鉀即可開始，系統依序提示下一項應補的資料，同步給出緊急度、補鉀/補鎂計畫、病因鑑別與確認檢查。">
+<title>低血鉀症引導決策台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-:root{--bg:#f6f7f8;--surface:#fff;--panel:#eef3f2;--ink:#14201f;--muted:#60706d;--line:#d8e0de;--accent:#0f766e;--danger:#b42318;--ok:#1f7a4c;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;gap:18px;align-items:center;padding:20px clamp(16px,3vw,40px);background:var(--surface);border-bottom:1px solid var(--line)}h1{margin:0;font-size:clamp(26px,3vw,40px);line-height:1.1}.eyebrow{margin:0 0 5px;color:var(--accent);font-size:12px;font-weight:800;text-transform:uppercase}.badges{display:flex;gap:8px;flex-wrap:wrap}.badge{border:1px solid var(--line);border-radius:6px;background:var(--panel);padding:7px 10px;font-weight:800;font-size:13px}.danger{background:#fde8e6;color:var(--danger)}main{display:grid;grid-template-columns:minmax(320px,430px) 1fr;gap:18px;max-width:1560px;margin:0 auto;padding:18px}.side,.card,.node,.refs{background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 12px 28px rgba(23,39,37,.08)}.side{align-self:start;position:sticky;top:98px;max-height:calc(100vh - 116px);overflow:auto}.section{padding:17px;border-bottom:1px solid var(--line)}.section:last-child{border-bottom:0}h2{margin:0 0 12px;font-size:20px}h3{margin:0 0 12px;font-size:15px}.micro{color:var(--muted);font-size:13px;line-height:1.55;margin:0}label{display:grid;gap:7px;margin-bottom:14px;font-size:13px;font-weight:750}input,select{font:inherit;width:100%;min-height:42px;border:1px solid #c8d3d1;border-radius:6px;padding:8px 10px;background:#fff}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.checks label{display:flex;align-items:flex-start;gap:9px;font-weight:650;line-height:1.45}.checks input{width:18px;min-height:18px}.results{display:grid;gap:18px}.steps{display:flex;gap:8px;flex-wrap:wrap}.step{border:1px solid var(--line);border-radius:6px;background:var(--panel);padding:7px 10px;color:var(--muted);font-size:13px;font-weight:800}.step.on{background:#dcefed;color:#084e49;border-color:#99c7c2}.step.done{background:#e6f4eb;color:var(--ok);border-color:#abd7bf}.node{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:22px}.node h2{font-size:clamp(22px,2.6vw,34px);margin:0}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.card,.refs{padding:20px}ul,ol{margin:0;padding-left:20px}li{margin-bottom:8px;line-height:1.52}.tag{display:inline-flex;margin:0 6px 6px 0;padding:5px 8px;border-radius:5px;background:var(--panel);font-size:12px;font-weight:800}.tag.ok{background:#e5f4ea;color:var(--ok)}.empty{color:var(--muted);line-height:1.55}.dose{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.dose div{border:1px solid var(--line);border-radius:8px;background:#fbfcfc;padding:14px}.dose p{margin:0;color:#334340;font-size:14px;line-height:1.55}footer{display:flex;justify-content:space-between;gap:12px;padding:18px clamp(16px,3vw,40px) 28px;color:var(--muted);font-size:12px}@media(max-width:1050px){main{grid-template-columns:1fr}.side{position:static;max-height:none}.dose{grid-template-columns:repeat(2,1fr)}}@media(max-width:720px){header,.node,footer{flex-direction:column;align-items:flex-start}main{padding:12px}.grid2,.cards,.dose{grid-template-columns:1fr}}
+/* Layout: clinical console — masthead + numbered tabs; workspace = guided navigator (left) + full layered data sheet (right) */
+:root{
+  --paper:#f3f6f6; --panel:#ffffff; --ink:#152224; --ink-2:#47585b; --ink-3:#788a8d; --line:#d3dddd; --line-2:#e6eded;
+  --accent:#17707f; --accent-ink:#ffffff; --accent-soft:#e0f0f2;
+  --go:#2d7a4c; --go-soft:#e2f1e7; --warn:#946708; --warn-soft:#faf0d9; --stop:#b3372b; --stop-soft:#f8e2de;
+  --f-display:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#0e1516; --panel:#162022; --ink:#e3eced; --ink-2:#a2b2b4; --ink-3:#738588; --line:#283537; --line-2:#1e292b;
+  --accent:#6cc3d1; --accent-ink:#082226; --accent-soft:#16313a;
+  --go:#65c48b; --go-soft:#162a1f; --warn:#e4b852; --warn-soft:#2d2612; --stop:#f08a7a; --stop-soft:#381e1a; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --paper:#0e1516; --panel:#162022; --ink:#e3eced; --ink-2:#a2b2b4; --ink-3:#738588; --line:#283537; --line-2:#1e292b;
+  --accent:#6cc3d1; --accent-ink:#082226; --accent-soft:#16313a;
+  --go:#65c48b; --go-soft:#162a1f; --warn:#e4b852; --warn-soft:#2d2612; --stop:#f08a7a; --stop-soft:#381e1a; color-scheme:dark }
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65}
+.wrap{max-width:1260px;margin:0 auto;padding-inline:20px;padding-block:0 56px}
+@media (max-width:520px){.wrap{padding-inline:16px}}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;font-weight:700;letter-spacing:.01em}
+h1{font-size:clamp(24px,3.2vw,32px);line-height:1.25}
+h3{font-size:16.5px}
+h4{margin:0;font-size:14px;font-weight:700}
+p{margin:0}
+.muted{color:var(--ink-2)} .small{font-size:13px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);font-weight:500}
+.masthead{padding-block:28px 0;display:grid;gap:8px}
+.masthead .sub{color:var(--ink-2);max-width:80ch}
+.src{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.src span{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;color:var(--ink-2);background:var(--panel)}
+.tabs{display:flex;gap:4px;margin-top:18px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{appearance:none;border:0;background:none;font:inherit;color:var(--ink-2);padding:10px 14px 11px;cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;font-weight:500}
+.tab b{font-family:var(--f-mono);font-weight:500;color:var(--ink-3);margin-right:6px;font-size:13px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab[aria-selected="true"] b{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+section.pane{padding-top:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+.card>h3{margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.stack{display:grid;gap:16px;min-width:0}
+.field{display:grid;gap:4px;min-width:0;align-content:start}
+.field>.flabel{font-size:12.5px;color:var(--ink-2);font-weight:500}
+.field .hint{font-size:11.5px;color:var(--ink-3);line-height:1.4}
+input[type=number],select{font:inherit;font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:6px 8px;min-width:0;max-width:100%}
+input[type=number]{width:104px;font-family:var(--f-mono)}
+select{width:100%}
+.u{font-size:12px;color:var(--ink-3);font-family:var(--f-mono);white-space:nowrap}
+.inl{display:flex;gap:6px;align-items:center}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:14px;cursor:pointer;padding:3px 0;line-height:1.5}
+.check input{margin-top:4px;accent-color:var(--accent);flex:none}
+.check.confirm{font-weight:700;color:var(--accent);border-top:1px dashed var(--line);padding-top:8px;margin-top:4px}
+.btn{appearance:none;font:inherit;font-size:13.5px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:7px;padding:6px 12px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.sm{font-size:12.5px;padding:3px 10px}
+.pill{display:inline-block;font-size:11.5px;font-weight:500;border-radius:999px;padding:1px 9px;white-space:nowrap;vertical-align:1px}
+.pill.ev{background:var(--accent-soft);color:var(--accent)}
+.pill.go{background:var(--go-soft);color:var(--go)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.stop{background:var(--stop-soft);color:var(--stop)}
+.pill.mute{background:var(--line-2);color:var(--ink-2)}
+.sample{font-size:12px;color:var(--warn);background:var(--warn-soft);border-radius:999px;padding:1px 10px;font-weight:500}
+.note{font-size:13px;color:var(--ink-2);border-left:3px solid var(--line);padding:4px 0 4px 12px}
+.alert{border-radius:8px;padding:10px 12px;font-size:14px;display:grid;gap:4px}
+.alert.warn{background:var(--warn-soft)} .alert.warn strong{color:var(--warn)}
+.alert.stop{background:var(--stop-soft)} .alert.stop strong{color:var(--stop)}
+.alert.go{background:var(--go-soft)} .alert.go strong{color:var(--go)}
+.alert.info{background:var(--accent-soft)} .alert.info strong{color:var(--accent)}
+ul.plain{margin:6px 0 0;padding-left:18px;display:grid;gap:4px;font-size:14px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line-2);vertical-align:top}
+th{font-weight:500;color:var(--ink-2);font-size:12.5px;white-space:nowrap}
+.tablebox{overflow-x:auto}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:1020px){.two{grid-template-columns:minmax(0,1fr)}}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px}
+@media (max-width:640px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.sub-h{font-size:12.5px;color:var(--ink-2);font-weight:500;margin:14px 0 6px}
+.sub-h:first-child{margin-top:0}
+
+/* status strip */
+.status{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(6px);padding:10px 0;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.status .kbox{font-family:var(--f-mono);font-size:26px;line-height:1;font-weight:500}
+.status .kbox small{font-size:12px;color:var(--ink-3);margin-left:4px}
+.status .grow{flex:1 1 220px;min-width:0}
+.prog{height:7px;border-radius:4px;background:var(--line-2);overflow:hidden;margin-top:5px}
+.prog i{display:block;height:100%;background:var(--accent);transition:width .25s}
+.lvl{font-size:13px;font-weight:700;border-radius:7px;padding:5px 10px}
+.lvl.emergent{background:var(--stop);color:#fff} .lvl.urgent{background:var(--warn-soft);color:var(--warn)} .lvl.routine{background:var(--go-soft);color:var(--go)} .lvl.unknown,.lvl.none{background:var(--line-2);color:var(--ink-2)}
+
+/* guided asks */
+.ask{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:9px;padding:11px 13px;display:grid;gap:8px;background:var(--panel)}
+.ask.now{border-left-color:var(--stop)}
+.ask.later{border-left-color:var(--line)}
+.ask .ah{display:flex;gap:8px;align-items:baseline;justify-content:space-between;flex-wrap:wrap}
+.ask .ah h4{font-size:14.5px}
+.ask .why{font-size:13px;color:var(--ink-2)}
+.ask .fields{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-start}
+.ask .fields .field{flex:0 1 auto}
+.ask .fields .field.wide{flex:1 1 260px}
+.ask .checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;width:100%}
+@media (max-width:640px){.ask .checks{grid-template-columns:minmax(0,1fr)}}
+.ask .acts{display:flex;gap:8px;flex-wrap:wrap}
+.asklist{display:grid;gap:10px}
+details.more>summary{cursor:pointer;font-size:13px;color:var(--ink-2);padding:4px 0}
+.pend{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13.5px;padding:5px 0;border-bottom:1px dashed var(--line-2)}
+
+/* ddx */
+.dx{border:1px solid var(--line-2);border-radius:8px;padding:9px 12px;display:grid;gap:4px}
+.dx .dh{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.dx .dh b{font-size:14.5px}
+.dx ul{margin:0;padding-left:18px;font-size:13px;color:var(--ink-2)}
+.dx .nx{font-size:12.8px;color:var(--accent)}
+.dx.confirmed{border-color:var(--go);box-shadow:0 0 0 1px var(--go) inset}
+.dx.likely{border-color:var(--accent)}
+.dx.unlikely{opacity:.62}
+.dxlist{display:grid;gap:8px}
+.final{border-radius:10px;padding:12px 14px;background:var(--go-soft)}
+.final b{color:var(--go);font-size:16px}
+
+/* data sheet */
+details.layer{border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+details.layer+details.layer{margin-top:10px}
+details.layer>summary{list-style:none;cursor:pointer;padding:11px 14px;display:flex;gap:10px;align-items:center}
+details.layer>summary::-webkit-details-marker{display:none}
+details.layer>summary .n{font-family:var(--f-mono);color:var(--accent);font-weight:500;min-width:1.4ch}
+details.layer>summary .t{font-weight:700;flex:1}
+details.layer .lb{padding:2px 14px 14px;display:grid;gap:10px}
+.flash{animation:flash 1.2s ease}
+@keyframes flash{0%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 0 transparent}}
+
+/* path */
+ol.path{margin:0;padding:0;list-style:none;display:grid;gap:0}
+ol.path li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;padding:6px 0;font-size:13.8px;border-bottom:1px dashed var(--line-2)}
+ol.path li i{font-style:normal;font-family:var(--f-mono);font-size:12px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--line-2);color:var(--ink-3);margin-top:1px}
+ol.path li.done i{background:var(--go-soft);color:var(--go)}
+ol.path li.now i{background:var(--accent);color:var(--accent-ink)}
+ol.path li .pl{color:var(--ink-3);font-size:12.5px}
+
+/* treatment */
+.tx h4{margin:12px 0 4px;font-size:14px;color:var(--accent)}
+.tx h4:first-child{margin-top:0}
+.order{font-family:var(--f-mono);font-size:12.8px;background:var(--paper);border-radius:6px;padding:7px 10px;margin-top:6px;line-height:1.6}
+.bdr{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.bdr .m{border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;background:var(--paper);min-width:120px}
+.bdr .m .k{font-size:12px;color:var(--ink-2)}
+.bdr .m .v{font-family:var(--f-mono);font-size:19px}
+
+/* algorithm */
+.tree,.tree ul{list-style:none;margin:0;padding:0}
+.tree ul{padding-left:22px;border-left:1.5px solid var(--line);margin-left:9px}
+.tree li{position:relative;padding:4px 0 4px 12px}
+.tree ul>li::before{content:"";position:absolute;left:-1px;top:17px;width:11px;border-top:1.5px solid var(--line)}
+.tree .nd{display:inline-block;border:1px solid var(--line);border-radius:8px;padding:5px 10px;background:var(--panel);font-size:13.8px;max-width:100%}
+.tree .nd small{display:block;color:var(--ink-3);font-size:12px}
+.tree .nd.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent) inset}
+.tree .nd.on b{color:var(--accent)}
+
+.log{font-size:12.8px;max-height:220px;overflow:auto;display:grid;gap:2px}
+.log div{display:grid;grid-template-columns:52px minmax(0,1fr);gap:8px}
+.log .mono{color:var(--ink-3)}
+.cases{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.case{display:grid;gap:8px;align-content:start}
+.refs{padding-left:20px;margin:0;display:grid;gap:8px;font-size:13.8px}
+.refs a{color:var(--accent)}
+.disclaimer{margin-top:22px;font-size:13px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:14px;max-width:90ch}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);font-size:13.5px;padding:8px 16px;border-radius:999px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{
+  body{background:#fff;font-size:12.5px}
+  .tabs,.noprint,.toast,.status .acts{display:none!important}
+  .status{position:static}
+  .card{border-color:#bbb;break-inside:avoid}
+}
 </style>
 </head>
 <body>
-<header><div><p class="eyebrow">Hypokalemia Clinical Decision Tree</p><h1>低血鉀症互動診斷流程</h1></div><div class="badges"><span id="progress" class="badge">0% 完成</span><span id="risk" class="badge">尚未分級</span></div></header>
-<main>
-<aside class="side"><div class="section"><h2>必要資料</h2><p class="micro">每一層只依已輸入資料判斷；若仍有多重候選，系統會要求補檢，不會輸出多重最終診斷。</p></div>
-<form>
-<div class="section"><h3>第 0-1 層：確認與危險篩檢</h3><label>血清鉀 K+ (mEq/L)<input id="k" type="number" step="0.1" min="1.5" max="6.5" placeholder="例如 2.8"></label><div class="grid2"><label>症狀<select id="sym"><option value="">未輸入</option><option value="none">無或輕微</option><option value="mild">疲倦、抽筋、便秘</option><option value="severe">肌無力、麻痺、橫紋肌溶解、呼吸肌無力</option></select></label><label>心電圖<select id="ecg"><option value="">未輸入</option><option value="normal">無明顯變化</option><option value="uwave">T 波扁平/ST 壓低/U 波/QT 延長</option><option value="arrhythmia">心律不整或 digoxin 中毒疑慮</option></select></label></div><div class="checks"><label><input id="unstable" type="checkbox">生命徵象不穩、休克、胸痛或急性重症</label><label><input id="confirmed" type="checkbox">已重複確認或臨床高度可信</label></div></div>
-<div class="section"><h3>第 2 層：鉀離子去哪了？</h3><div class="grid2"><label>尿鉀/肌酸酐比 (mEq/g)<input id="ukcr" type="number" step="0.1" placeholder="例如 18"></label><label>24 小時尿鉀 (mEq/day)<input id="uk24" type="number" step="1" placeholder="選填"></label></div><div class="grid2"><label>酸鹼狀態<select id="ab"><option value="">未輸入</option><option value="alkalosis">代謝性鹼中毒</option><option value="acidosis">代謝性酸中毒</option><option value="normal">正常或不明顯</option></select></label><label>血壓<select id="bp"><option value="">未輸入</option><option value="low-normal">正常或偏低</option><option value="high">高血壓</option></select></label></div></div>
-<div class="section"><h3>第 3-5 層：病因與最終證據</h3><div class="grid2"><label>尿氯 UCl- (mEq/L)<input id="ucl" type="number" step="1" placeholder="代謝鹼中毒時重要"></label><label>血鎂 Mg (mg/dL)<input id="mg" type="number" step="0.1" placeholder="例如 1.3"></label></div><div class="grid2"><label>尿鈣<select id="uca"><option value="">未輸入</option><option value="low">低尿鈣</option><option value="high">高尿鈣</option><option value="normal">正常或不確定</option></select></label><label>腎素/醛固酮<select id="raas"><option value="">未輸入</option><option value="high-high">腎素高、醛固酮高</option><option value="low-high">腎素低、醛固酮高</option><option value="low-low">腎素低、醛固酮低</option><option value="normal">正常或未支持礦物皮質素過多</option></select></label></div><label>臨床線索<select id="clue"><option value="">未輸入</option><option value="shift">胰島素、beta-2 agonist、鹼中毒、週期性麻痺</option><option value="gi">嘔吐、腹瀉、瀉藥、鼻胃管引流</option><option value="diuretic">Loop/thiazide 利尿劑或近期使用</option><option value="bartter">產前/新生兒、羊水過多、多尿、生長遲緩</option><option value="gitelman">青少年/成人、抽筋、低鎂、軟骨鈣化</option><option value="licorice">甘草、咀嚼菸草、外源性礦物皮質素</option></select></label><label>最終鑑別證據<select id="evidence"><option value="">尚未取得</option><option value="shift-confirmed">誘發細胞內轉移因素明確，停用/矯正後鉀值改善</option><option value="vomiting-confirmed">嘔吐或胃管引流明確，尿氯低，補氯後改善</option><option value="diarrhea-confirmed">腹瀉/瀉藥明確，代謝性酸中毒或糞便鉀流失支持</option><option value="diuretic-positive">尿液利尿劑篩檢陽性或用藥紀錄確認</option><option value="bartter-genetic">Bartter 相關基因或典型兒科表型確認</option><option value="gitelman-genetic">Gitelman/SLC12A3 基因或典型成人低鎂低尿鈣表型確認</option><option value="pa-confirmed">PA 確認試驗陽性，且影像/AVS 完成分型</option><option value="liddle-genetic">ENaC/SCNN1 基因或典型 Liddle 家族史確認</option><option value="pseudo-mineralocorticoid">甘草/外源性礦物皮質素暴露確認，停用後改善</option><option value="distal-rta">尿 pH > 5.5 且非陰離子間隙代謝性酸中毒，支持 distal RTA</option><option value="proximal-rta">近端腎小管功能異常/Fanconi 或 bicarbonate wasting 支持 proximal RTA</option><option value="nonreabsorbable-anion">酮酸、HCO3- 或藥物性非吸收性陰離子確認</option></select></label></div>
-</form></aside>
-<section class="results"><nav id="steps" class="steps"></nav><section class="node"><div><p id="layer" class="eyebrow">等待輸入</p><h2 id="title">請先輸入血清鉀與危險訊號</h2></div><span id="severity" class="badge">未分級</span></section><section class="cards"><article class="card"><h3>目前判斷</h3><div id="assess"></div></article><article class="card"><h3>下一層需要資料</h3><div id="missing"></div></article><article class="card"><h3>治療與安全建議</h3><div id="treat"></div></article><article class="card"><h3>最終診斷</h3><div id="dx"></div></article></section><section class="card"><h2>分層樹狀路徑</h2><ol id="path"></ol></section><section class="refs"><h2>劑量速查與治療原則</h2><div class="dose"><div><h3>口服補鉀</h3><p>KCl 常用 40-80 mEq/day 分次給予，依缺口、腎功能與追蹤鉀值調整。</p></div><div><h3>靜脈補鉀</h3><p>周邊常用 10 mEq/h；20 mEq/h 需連續 ECG 監測，避免 D5W。</p></div><div><h3>補鎂</h3><p>低鎂會讓低血鉀難以矯正；Mg 低時應優先或同步補鎂。</p></div><div><h3>病因治療</h3><p>停止致病藥物、治療腹瀉/嘔吐、處理 RTA 或礦物皮質素過多。</p></div></div><p class="micro">本工具供醫療教育與流程設計使用，不取代臨床醫囑。</p></section></section>
-</main><footer><span>依低血鉀分層診斷樹、UpToDate 參考資料與公開臨床資料整理。</span><span>最後更新：2026-06-27</span></footer>
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">Hypokalemia · stepwise guided diagnosis &amp; treatment</div>
+    <h1>低血鉀症引導決策台</h1>
+    <p class="sub">初次接觸時資料通常不完整：只要輸入血清鉀就能開始。系統依「先安全、再定位、後病因」的順序，逐項提示下一個最該補的資料，並說明理由。每補一項，緊急度、補鉀與補鎂計畫、病因鑑別都會跟著更新。檢驗已送出但還沒回報，可以標記「待回報」，系統會先用現有資料做暫定判斷，再提示其他可以先做的事。</p>
+    <div class="src"><span>UpToDate：Evaluation／Causes／Treatment of hypokalemia in adults（2025–2026）</span><span>Endocrine Society PA Guideline 2025</span><span>ADA/EASD/JBDS/AACE/DTS Hyperglycemic Crises 2024</span><span>KDIGO Gitelman Consensus 2017</span></div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="功能分頁">
+    <button class="tab" role="tab" id="tab-ws" aria-controls="ws" data-t="ws"><b>1</b>引導評估</button>
+    <button class="tab" role="tab" id="tab-tx" aria-controls="tx" data-t="tx"><b>2</b>補鉀治療計畫</button>
+    <button class="tab" role="tab" id="tab-algo" aria-controls="algo" data-t="algo"><b>3</b>鑑別流程總覽</button>
+    <button class="tab" role="tab" id="tab-cases" aria-controls="cases" data-t="cases"><b>4</b>示例病例</button>
+    <button class="tab" role="tab" id="tab-ref" aria-controls="ref" data-t="ref"><b>5</b>參考文獻</button>
+  </nav>
+
+  <div class="status" id="status" aria-live="polite"></div>
+
+  <!-- 1 workspace -->
+  <section class="pane" id="ws" role="tabpanel" aria-labelledby="tab-ws">
+    <div class="two">
+      <div class="stack">
+        <div class="card">
+          <h3>下一步：請補這些資料 <span class="pill ev" id="askCount"></span></h3>
+          <p class="small muted" style="margin-bottom:10px">紅色標記的項目和安全有關，請先處理；藍色是鑑別下一層需要的資料。直接在卡片內填寫即可，填完後系統會換成下一個問題。</p>
+          <div class="asklist" id="asks"></div>
+          <div id="laterBox"></div>
+        </div>
+        <div class="card" id="pendCard" hidden>
+          <h3>已送檢、待回報</h3>
+          <div id="pending"></div>
+        </div>
+        <div class="card">
+          <h3>緊急度與立即處置</h3>
+          <div id="urgent"></div>
+        </div>
+        <div class="card">
+          <h3>病因鑑別 <span class="pill mute" id="dxTag"></span></h3>
+          <div id="ddx"></div>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <h3>分層路徑</h3>
+          <ol class="path" id="path"></ol>
+        </div>
+        <div>
+          <div class="sub-h" style="display:flex;justify-content:space-between;align-items:center">完整資料表（可隨時修改任一層） <button class="btn sm noprint" id="expandAll" type="button">全部展開</button></div>
+          <div id="sheet"></div>
+        </div>
+        <div class="card">
+          <h3>資料增補紀錄</h3>
+          <div class="log" id="log"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 treatment -->
+  <section class="pane" id="tx" role="tabpanel" aria-labelledby="tab-tx" hidden>
+    <div class="two">
+      <div class="stack">
+        <div class="card tx" id="txPlan"></div>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <h3>靜脈補鉀上限（UpToDate）</h3>
+          <div class="tablebox"><table>
+            <thead><tr><th>項目</th><th>建議</th></tr></thead>
+            <tbody>
+              <tr><td>一般速率</td><td>10–20 mEq/h；周邊 &gt;10 mEq/h 易疼痛、靜脈炎</td></tr>
+              <tr><td>危及生命</td><td>起始可達 40 mEq/h，經中心靜脈或多條周邊靜脈，連續 ECG</td></tr>
+              <tr><td>周邊濃度</td><td>常用 20–60 mEq/L，以 saline 稀釋（不用 dextrose）</td></tr>
+              <tr><td>每袋最大量</td><td>1000 mL 袋 ≤60 mEq；周邊 minibag 100–200 mL ≤10 mEq；中心 minibag 100 mL ≤40 mEq</td></tr>
+              <tr><td>輸液幫浦</td><td>袋內 &gt;40 mEq 或速率 &gt;10 mEq/h 時使用</td></tr>
+              <tr><td>連續 ECG</td><td>心律不整、QT 延長或其他低鉀 ECG 變化、digoxin／MI／長 QT、IV &gt;10 mEq/h、有反彈性高血鉀風險（週期性麻痺）</td></tr>
+              <tr><td>追蹤</td><td>K 每 2–4 h，直到持續 &gt;3.0–3.5 且症狀消失</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="card">
+          <h3>鉀鹽選擇</h3>
+          <div class="tablebox"><table>
+            <thead><tr><th>情境</th><th>首選</th></tr></thead>
+            <tbody>
+              <tr><td>多數病人（尤其鹼中毒、缺氯）</td><td>KCl；非氯鉀鹽在鹼中毒時保留量僅約 KCl 的 40%</td></tr>
+              <tr><td>代謝性酸中毒（RTA、腹瀉）</td><td>K citrate／bicarbonate（IV 僅 K acetate）；嚴重時先以 KCl 拉到安全值</td></tr>
+              <tr><td>合併低磷（Fanconi、DKA、再餵食）</td><td>部分以磷酸鉀補充</td></tr>
+              <tr><td>持續腎失鉀（利尿劑、Gitelman、PA）</td><td>加保鉀利尿劑：amiloride 優先；PA 用 MRA</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note" style="margin-top:10px">水果補鉀效率低：香蕉每公分約 0.9 mEq，2–3 根才約 40 mEq，且多為非氯鉀鹽。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 algorithm -->
+  <section class="pane" id="algo" role="tabpanel" aria-labelledby="tab-algo" hidden>
+    <div class="card">
+      <h3>鑑別流程總覽 <span class="pill ev">藍框＝目前病人走到的節點</span></h3>
+      <ul class="tree">
+        <li><span class="nd" data-n="k"><b>確認低血鉀</b><small>K &lt;3.5；排除假性低血鉀（白血球極高、檢體延遲）</small></span>
+          <ul>
+            <li><span class="nd" data-n="pseudo">假性低血鉀<small>快速分離血漿重測</small></span></li>
+            <li><span class="nd" data-n="safety"><b>安全層</b><small>症狀、ECG、Mg、腎功能、心臟病/digoxin、DKA</small></span></li>
+            <li><span class="nd" data-n="shift">明顯轉移誘因<small>胰島素、β2 agonist、theophylline、再餵食、週期性麻痺 → 低劑量補鉀，警惕反彈</small></span></li>
+            <li><span class="nd" data-n="route"><b>尿鉀定位</b><small>Spot UK/UCr（或 24 h 尿鉀）</small></span>
+              <ul>
+                <li><span class="nd" data-n="extra"><b>UK/UCr &lt;13 mEq/g</b><small>非腎性流失／轉移／攝取不足（24 h &lt;25 mEq）</small></span>
+                  <ul>
+                    <li><span class="nd" data-n="extra-acid">代謝性酸中毒<small>下消化道：腹瀉、瀉藥、絨毛腺瘤</small></span></li>
+                    <li><span class="nd" data-n="extra-alk">代謝性鹼中毒<small>隱匿催吐、藥效已消退的利尿劑、少數瀉藥</small></span></li>
+                    <li><span class="nd" data-n="extra-normal">酸鹼正常<small>細胞內轉移（TPP：UK/UCr &lt;22）、攝取不足</small></span></li>
+                  </ul>
+                </li>
+                <li><span class="nd" data-n="renal"><b>UK/UCr &gt;13 mEq/g</b><small>腎失鉀（24 h &gt;30 mEq）</small></span>
+                  <ul>
+                    <li><span class="nd" data-n="renal-acid">代謝性酸中毒</span>
+                      <ul>
+                        <li><span class="nd" data-n="renal-acid-ag">AG 升高<small>DKA／酮酸、toluene</small></span></li>
+                        <li><span class="nd" data-n="renal-acid-nag">AG 正常<small>遠端 RTA（尿 pH &gt;5.5、UAG 正）、近端 RTA／Fanconi、acetazolamide</small></span></li>
+                      </ul>
+                    </li>
+                    <li><span class="nd" data-n="renal-normal">酸鹼正常<small>低鎂、腎毒性藥物、多尿；或早期／混合型</small></span></li>
+                    <li><span class="nd" data-n="renal-alk">代謝性鹼中毒</span>
+                      <ul>
+                        <li><span class="nd" data-n="alk-low"><b>血壓正常或偏低</b><small>測尿氯</small></span>
+                          <ul>
+                            <li><span class="nd" data-n="ucl-low">尿氯 &lt;20<small>嘔吐／胃管（活動期尿 pH &gt;7）</small></span></li>
+                            <li><span class="nd" data-n="ucl-high">尿氯 ≥20<small>利尿劑 → Bartter（尿鈣正常/高）→ Gitelman（低尿鈣、低鎂）；需尿液利尿劑篩檢</small></span></li>
+                          </ul>
+                        </li>
+                        <li><span class="nd" data-n="alk-high"><b>高血壓</b><small>腎素／醛固酮</small></span>
+                          <ul>
+                            <li><span class="nd" data-n="raas-lh">腎素↓ 醛固酮↑<small>原發性醛固酮增多症</small></span></li>
+                            <li><span class="nd" data-n="raas-hh">腎素↑ 醛固酮↑<small>腎動脈狹窄、惡性高血壓、renin 腫瘤、高血壓病人用利尿劑</small></span></li>
+                            <li><span class="nd" data-n="raas-ll">腎素↓ 醛固酮↓<small>Liddle、甘草/AME/azole、Cushing（異位 ACTH）、CAH、DOC 腫瘤</small></span></li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <p class="note" style="margin-top:14px">陷阱：(1) 利尿劑停藥後或嘔吐停止後，尿鉀會轉低，看起來像腎外流失；(2) 活動性嘔吐因重碳酸尿，UK/UCr 反而偏高，靠低尿氯與尿 pH &gt;7 辨識；(3) 未校正的低血鉀會壓低醛固酮，PA 篩檢可能偽陰性；(4) Spot 尿鉀在 UNa &lt;30 或多尿時可能失真，優先用 UK/UCr；(5) Thiazide 可完全模擬 Gitelman、loop 利尿劑可完全模擬 Bartter，需做尿液利尿劑篩檢。</p>
+    </div>
+  </section>
+
+  <!-- 4 cases -->
+  <section class="pane" id="cases" role="tabpanel" aria-labelledby="tab-cases" hidden>
+    <p class="muted small" style="margin-bottom:12px">載入示例會覆蓋目前輸入（可先用「複製摘要」保存）。示例數值為教學用的虛構資料。</p>
+    <div class="cases" id="caseList"></div>
+  </section>
+
+  <!-- 5 refs -->
+  <section class="pane" id="ref" role="tabpanel" aria-labelledby="tab-ref" hidden>
+    <div class="card">
+      <h3>參考文獻</h3>
+      <ol class="refs">
+        <li>Mount DB. Evaluation of the adult patient with hypokalemia. UpToDate（topic last updated Jul 28, 2025；literature review through May 2026）。UK/UCr &gt;13 mEq/g、24 h 尿鉀 &gt;30 mEq/day 為腎失鉀；週期性麻痺 UK/UCr 切點約 22 mEq/g；尿 Na/Cl 比值。</li>
+        <li>Mount DB. Causes of hypokalemia in adults. UpToDate（2025–2026 版）。</li>
+        <li>Mount DB. Clinical manifestations and treatment of hypokalemia in adults. UpToDate（2025–2026 版）。缺鉀估算（每降 1 mEq/L 約缺 200–400 mEq）、口服與靜脈劑量、每袋上限、監測、鉀鹽選擇。</li>
+        <li>Adler GK, Stowasser M, Correa RR, et al. Primary Aldosteronism: An Endocrine Society Clinical Practice Guideline. J Clin Endocrinol Metab 2025. <a href="https://www.endocrine.org/news-and-advocacy/news-room/2025/endocrine-society-guideline-calls-for-increased-screening-for-common-cause-of-high-blood-pressure" target="_blank" rel="noopener">Endocrine Society 新聞稿</a>：所有高血壓病人都應篩檢；確認試驗不再是必要步驟；篩檢陰性但有低血鉀者，補鉀後重驗；MRA 為第一線藥物治療。</li>
+        <li>Umpierrez GE, Davis GM, ElSayed NA, et al. Hyperglycemic crises in adults with diabetes: a consensus report. Diabetes Care 2024;47:1257–1275。K &lt;3.5 mmol/L 暫緩胰島素並先補鉀。</li>
+        <li>Blanchard A, Bockenhauer D, Bolignano D, et al. Gitelman syndrome: consensus and guidance from a KDIGO Controversies Conference. Kidney Int 2017;91:24–33。低尿鈣定義（成人 UCa/UCr &lt;0.2 mmol/mmol）。</li>
+        <li>Lin SH, et al. Laboratory tests to determine the cause of hypokalemia and paralysis. Arch Intern Med 2004;164:1561–1566。</li>
+        <li>StatPearls：Hypokalemia（updated Jan 2025）<a href="https://www.ncbi.nlm.nih.gov/books/NBK482465/" target="_blank" rel="noopener">NBK482465</a>；Hyperaldosteronism（updated Jun 2025）<a href="https://www.ncbi.nlm.nih.gov/books/NBK499983/" target="_blank" rel="noopener">NBK499983</a>。</li>
+      </ol>
+      <h3 style="margin-top:18px">版本紀錄</h3>
+      <ul class="plain">
+        <li>2026-10-04：重寫為逐步引導版。初次接觸只需 K 值；新增「下一步」引導卡（可就地填寫）、待回報機制、暫定鑑別、安全層（Mg、eGFR、口服能力、心臟病/digoxin、DKA）、補鉀/補鎂計畫與範例醫囑、流程總覽高亮、示例病例、資料增補紀錄與摘要複製。PA 依 ES 2025 更新（確認試驗非必要）；DKA 依 2024 共識（K &lt;3.5 暫緩胰島素）。</li>
+        <li>2026-06-27：初版分層診斷樹。</li>
+      </ul>
+    </div>
+    <p class="disclaimer">本工具供醫療專業人員教育與流程輔助使用，不取代臨床判斷與院內規範。劑量與速率須依病人腎功能、尿量、心電圖、輸液限制、併用藥物與即時監測調整。輸入資料只存在您這台裝置的瀏覽器中（localStorage），不會上傳；請勿輸入可識別病人身分的資訊。</p>
+  </section>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
 <script>
-const $=id=>document.getElementById(id), N=id=>$(id).value===''?null:Number($(id).value), V=id=>$(id).value;
-['安全','確認','流失定位','酸鹼/血壓','病因','治療'].forEach((s,i)=>{const b=document.createElement('span');b.className='step';b.textContent=i+'. '+s;$('steps').appendChild(b)});
-function sev(s){if(s.unstable||s.ecg==='arrhythmia'||s.sym==='severe'||(s.k!==null&&s.k<2.5))return'critical';if(s.ecg==='uwave'||(s.k!==null&&s.k<3))return'moderate';if(s.k!==null&&s.k<3.5)return'mild';return'unknown'}
-function band(k){if(k===null)return'未輸入';if(k<2.5)return'重度低血鉀';if(k<3)return'中度低血鉀';if(k<3.5)return'輕度低血鉀';return'未達低血鉀定義'}
-function renal(s){if(s.ukcr!==null)return s.ukcr>13;if(s.uk24!==null)return s.uk24>=15;return null}
-function finalOut(s,layer,title,a,m,t,d,p){if(s.mg!==null&&s.mg<1.6)t.push('血鎂偏低：低鎂會促進腎鉀流失，請優先或同步補鎂。');if(d.length>1){d=[];m.push('目前仍有多個候選診斷，需補做最終鑑別證據後才能輸出唯一診斷。');title='尚未達唯一最終診斷'}return{layer,title,a:[...new Set(a)],m:[...new Set(m)],t:[...new Set(t)],d:[...new Set(d)],p:[...new Set(p)],risk:{critical:'高風險',moderate:'中度風險',mild:'輕度/穩定',unknown:'未分級'}[sev(s)],sev:sev(s)}}
-function analyze(){const s={k:N('k'),sym:V('sym'),ecg:V('ecg'),unstable:$('unstable').checked,confirmed:$('confirmed').checked,ukcr:N('ukcr'),uk24:N('uk24'),ab:V('ab'),bp:V('bp'),ucl:N('ucl'),mg:N('mg'),uca:V('uca'),raas:V('raas'),clue:V('clue'),e:V('evidence')};let layer=0,title='請先輸入血清鉀與危險訊號',a=[],m=[],t=[],d=[],p=[];const out=()=>finalOut(s,layer,title,a,m,t,d,p);if(s.k===null){m.push('血清鉀 K+，並確認檢體沒有明顯溶血或污染。');return out()}a.push(`血清鉀 ${s.k.toFixed(1)} mEq/L：${band(s.k)}。`);p.push(`確認層：${band(s.k)}。`);if(s.k>=3.5){layer=1;title='目前未達低血鉀定義';m.push('若臨床仍懷疑，重複電解質、鎂、酸鹼與尿鉀評估。');return out()}if(!s.confirmed){layer=1;title='低血鉀需先確認是否真實';m.push('重複血清鉀或確認近期趨勢。','檢查檢體品質、抽血時間、輸液、胰島素、beta-2 agonist、急性鹼中毒等干擾因素。');t.push('若 K <2.5、有症狀或 ECG 異常，不需等待完整鑑別，先進行安全補正。');return out()}layer=1;p.push('安全層：評估生命徵象、症狀與心電圖。');const sv=sev(s);if(sv==='critical')t.push('立即監測心電圖、評估腎功能與尿量；IV KCl 常用 10 mEq/h，20 mEq/h 需連續 ECG。');else if(sv==='moderate')t.push('可口服者優先 KCl；症狀、ECG 變化或無法口服時考慮 IV 補鉀。');else t.push('可口服者優先 KCl 分次補充，常用 40-80 mEq/day。');if(!s.sym)m.push('症狀分級。');if(!s.ecg)m.push('心電圖。');if(m.length&&sv!=='critical'){title='安全層資料尚未完整';return out()}layer=2;title='判斷腎臟失鉀或腎外/細胞內轉移';p.push('定位層：用尿鉀或尿鉀/肌酸酐比區分失鉀管道。');if(s.ukcr===null&&s.uk24===null){m.push('尿鉀/肌酸酐比 UK/UCr；>13-15 mEq/g 支持腎臟失鉀。','或 24 小時尿鉀。');return out()}if(!renal(s)){if(s.e==='shift-confirmed'){layer=5;title='最終診斷已確定';d.push('最終診斷：細胞內鉀轉移造成低血鉀。');t.push('移除或矯正誘因，避免過量補鉀造成反彈性高血鉀。');return out()}if(s.e==='vomiting-confirmed'){layer=5;title='最終診斷已確定';d.push('最終診斷：胃液流失造成低血鉀與 chloride-responsive 代謝性鹼中毒。');t.push('治療嘔吐或停止胃管流失，補充 NaCl 與 KCl。');return out()}if(s.e==='diarrhea-confirmed'){layer=5;title='最終診斷已確定';d.push('最終診斷：下消化道鉀流失造成低血鉀。');t.push('治療腹瀉/停用瀉藥，補充 KCl。');return out()}title='腎外流失或細胞內轉移尚未唯一化';m.push('臨床線索：胰島素/beta-2 agonist/鹼中毒、嘔吐/胃管引流、腹瀉/瀉藥或攝取不足。','最終鑑別證據：細胞內轉移確認、嘔吐/胃液流失確認、或腹瀉/瀉藥確認。');return out()}layer=3;title='腎臟失鉀：依酸鹼與血壓分類';p.push('分類層：腎臟失鉀需合併酸鹼狀態與血壓。');if(!s.ab)m.push('酸鹼狀態。');if(!s.bp)m.push('血壓與容量狀態。');if(m.length)return out();if(s.ab==='acidosis'){if(s.e==='distal-rta'){layer=5;title='最終診斷已確定';d.push('最終診斷：遠端型腎小管酸中毒造成腎臟失鉀。');t.push('補鉀並以枸櫞酸鉀或碳酸氫鹽治療酸中毒。');return out()}if(s.e==='proximal-rta'){layer=5;title='最終診斷已確定';d.push('最終診斷：近端型腎小管酸中毒/Fanconi 相關低血鉀。');t.push('治療近端小管病因，補鉀與鹼化治療需密切追蹤。');return out()}if(s.e==='nonreabsorbable-anion'){layer=5;title='最終診斷已確定';d.push('最終診斷：非吸收性陰離子增加造成腎臟排鉀。');t.push('處理酮酸、HCO3- 負荷或藥物性陰離子來源。');return out()}title='酸中毒分支尚未唯一化';m.push('尿 pH、尿陰離子間隙、血氯、腎功能、尿糖/酮、藥物史。','最終鑑別證據：distal RTA、proximal RTA/Fanconi，或非吸收性陰離子確認。');return out()}if(s.ab==='normal'){title='腎臟失鉀但酸鹼不明顯';m.push('重複酸鹼、尿氯、鎂、用藥與尿液篩檢。');return out()}p.push('代謝性鹼中毒：用血壓與尿氯/RAAS 進一步分類。');if(s.bp==='high'){layer=4;if(!s.raas){title='代謝性鹼中毒 + 高血壓';m.push('腎素與醛固酮，建議先矯正低血鉀後再解讀 ARR。');return out()}if(s.raas==='low-high'){if(s.e!=='pa-confirmed'){title='疑似 PA，尚未達最終診斷';m.push('PA 確認試驗：saline infusion、oral sodium loading、fludrocortisone suppression 或 captopril challenge。','PA 分型：腎上腺 CT 與 adrenal venous sampling (AVS)。','最終鑑別證據：PA 確認試驗陽性，且影像/AVS 完成分型。');return out()}layer=5;title='最終診斷已確定';d.push('最終診斷：原發性醛固酮增多症。');t.push('矯正低血鉀；依單側/雙側選擇手術或 mineralocorticoid receptor antagonist。');return out()}if(s.raas==='low-low'){if(s.e==='liddle-genetic'){layer=5;title='最終診斷已確定';d.push('最終診斷：Liddle syndrome。');t.push('amiloride 5-10 mg/day 起始，依血壓、鉀值與腎功能調整。');return out()}if(s.e==='pseudo-mineralocorticoid'){layer=5;title='最終診斷已確定';d.push('最終診斷：偽性礦物皮質素過多造成低血鉀。');t.push('停止甘草、咀嚼菸草、外源性礦物皮質素或相關藥物。');return out()}title='低腎素低醛固酮分支尚未唯一化';m.push('補用藥/暴露史：甘草、咀嚼菸草、外源性礦物皮質素或 azole 類藥物。','若無暴露或有家族史/年輕高血壓，補做 ENaC/SCNN1 基因檢測。','最終鑑別證據：Liddle 基因確認或偽性礦物皮質素暴露確認。');return out()}title='高血壓鹼中毒分支尚未唯一化';m.push('高腎素或非典型 RAAS 組合需補做腎動脈狹窄、利尿劑使用、惡性高血壓與容量狀態評估。');return out()}layer=4;if(s.ucl===null){title='代謝性鹼中毒 + 正常/低血壓';m.push('尿氯 UCl-：<20 mEq/L 支持 chloride-responsive alkalosis；>20 mEq/L 支持利尿劑、Bartter/Gitelman。');return out()}if(s.ucl<20){if(s.e!=='vomiting-confirmed'){title='低尿氯代謝性鹼中毒尚未唯一化';m.push('確認嘔吐、胃管引流、胃液流失或遠期利尿劑效應；追蹤補氯/補液後尿氯與鉀值反應。','最終鑑別證據：嘔吐或胃管引流明確，尿氯低，補氯後改善。');return out()}layer=5;title='最終診斷已確定';d.push('最終診斷：胃液流失造成低血鉀與 chloride-responsive 代謝性鹼中毒。');t.push('補充 NaCl 與 KCl，治療嘔吐或停止胃液流失。');return out()}if(!s.uca)m.push('尿鈣。');if(s.mg===null)m.push('血鎂。');if(!s.clue)m.push('利尿劑使用史、發病年齡、家族史與典型症狀。');if(m.length){title='高尿氯代謝性鹼中毒';return out()}if(s.e==='diuretic-positive'){layer=5;title='最終診斷已確定';d.push('最終診斷：利尿劑造成腎臟失鉀。');t.push('停用或調整利尿劑；必要時使用保鉀利尿劑。');return out()}if(s.e==='bartter-genetic'||(s.uca==='high'&&s.mg>=1.6&&s.clue==='bartter')){layer=5;title='最終診斷已確定';d.push('最終診斷：Bartter syndrome。');t.push('KCl、補液與鹽分，必要時 NSAID 由專科評估。');return out()}if(s.e==='gitelman-genetic'||(s.uca==='low'&&s.mg<1.6&&s.clue==='gitelman')){layer=5;title='最終診斷已確定';d.push('最終診斷：Gitelman syndrome。');t.push('長期 KCl 與鎂補充；可考慮 amiloride 或 MRA 減少腎鉀流失。');return out()}title='高尿氯代謝性鹼中毒尚未唯一化';m.push('尿液利尿劑篩檢或藥袋/處方紀錄：先排除隱匿 loop/thiazide 使用。','若利尿劑陰性，依表型補做基因檢測：Bartter 相關基因或 Gitelman/SLC12A3。','最終鑑別證據：利尿劑陽性、Bartter 基因/典型兒科表型、或 Gitelman 基因/典型成人低鎂低尿鈣表型。');return out()}
-function list(id,items,empty){$(id).innerHTML=items.length?'<ul>'+items.map(x=>`<li>${x}</li>`).join('')+'</ul':`<p class="empty">${empty}</p>`}function tags(id,items){$(id).innerHTML=items.length?items.map(x=>`<span class="tag ok">${x}</span>`).join(''):'<p class="empty">尚未達唯一最終診斷；請依「下一層需要資料」補做檢驗或確認證據。</p>'}
-function render(){const r=analyze();$('progress').textContent=Math.round(r.layer/5*100)+'% 完成';$('risk').textContent=r.risk;$('risk').className='badge '+(r.sev==='critical'?'danger':'');$('layer').textContent='第 '+r.layer+' 層';$('title').textContent=r.title;$('severity').textContent=r.risk;[...$('steps').children].forEach((e,i)=>{e.className='step '+(i<r.layer?'done':i===r.layer?'on':'')});list('assess',r.a,'等待血清鉀與基本危險資料。');list('missing',r.m,'目前沒有阻擋下一步的必要資料缺口。');list('treat',r.t,'完成嚴重度與病因分層後顯示治療建議。');tags('dx',r.d);$('path').innerHTML=r.p.length?r.p.map(x=>`<li>${x}</li>`).join(''):'<li class="empty">尚未建立診斷路徑。</li>'}
-document.querySelectorAll('input,select').forEach(e=>{e.addEventListener('input',render);e.addEventListener('change',render)});render();
-</script></body></html>
+/*ENGINE-START*/
+const HK = (() => {
+const num = v => (v === '' || v === null || v === undefined || v === false || !isFinite(Number(v))) ? null : Number(v);
+const r1 = x => Math.round(x * 10) / 10;
+
+/* ---------- field schema (layer = which tier of the data sheet) ---------- */
+const LAYERS = [
+  { n: 1, t: '確認與緊急度', d: '血清鉀、症狀、心電圖' },
+  { n: 2, t: '治療安全資料', d: 'Mg、腎功能、口服能力、高風險共病' },
+  { n: 3, t: '病史與用藥', d: '流失、轉移、藥物與暴露線索' },
+  { n: 4, t: '尿鉀定位', d: '腎性或非腎性流失' },
+  { n: 5, t: '酸鹼與血壓', d: 'HCO₃⁻、陰離子間隙、血壓' },
+  { n: 6, t: '病因細分', d: '尿氯、尿 pH、尿鈣、利尿劑篩檢、腎素/醛固酮、甲狀腺' },
+  { n: 7, t: '確認證據', d: '鎖定唯一主要病因' }
+];
+const F = {
+  k: { l: '血清鉀 K⁺', t: 'num', u: 'mEq/L', step: 0.1, L: 1, h: '<3.5 為低血鉀；<2.5 為重度' },
+  pseudo: { l: '白血球極高（>100,000/µL）且檢體延遲處理（疑假性低血鉀）', t: 'chk', L: 1 },
+  sym: { l: '症狀', t: 'sel', L: 1, o: [['none', '無或輕微'], ['mild', '疲倦、抽筋、便秘'], ['weak', '明顯肌無力或腸阻塞（ileus）'], ['paralysis', '麻痺或呼吸肌無力']] },
+  rhabdo: { l: '橫紋肌溶解（CK 明顯上升）', t: 'chk', L: 1 },
+  ecg: { l: '心電圖', t: 'sel', L: 1, o: [['normal', '無低鉀相關變化'], ['changes', 'U 波、ST 下降、T 波扁平或 QT 延長'], ['arrhythmia', '心律不整（頻發 PVC、VT/VF、torsades、AV block）']] },
+  egfr: { l: 'eGFR', t: 'num', u: 'mL/min/1.73m²', step: 1, L: 2, h: '<30 或少尿時補鉀要減量並密集追蹤' },
+  oliguria: { l: '少尿（<0.5 mL/kg/h）', t: 'chk', L: 2 },
+  po: { l: '可否口服', t: 'sel', L: 2, o: [['yes', '可口服或鼻胃管給藥'], ['no', '不可口服（NPO、ileus、意識不清）']] },
+  access: { l: '靜脈路徑', t: 'sel', L: 2, o: [['periph', '只有周邊靜脈'], ['central', '有中心靜脈導管']] },
+  mg: { l: '血鎂 Mg', t: 'num', u: 'mg/dL', step: 0.1, L: 2, h: '<1.7 mg/dL 為低鎂；低鎂時單補鉀難以矯正' },
+  phos: { l: '血磷 P（選填）', t: 'num', u: 'mg/dL', step: 0.1, L: 2, h: '<2.5 可部分改用磷酸鉀' },
+  cardiac: { l: '心臟病（MI、心衰竭、長 QT、使用抗心律不整藥）', t: 'chk', L: 2 },
+  digoxin: { l: '使用 digoxin', t: 'chk', L: 2 },
+  cirrhosis: { l: '肝硬化（低鉀增加氨生成，誘發肝性腦病變）', t: 'chk', L: 2 },
+  dka: { l: 'DKA／HHS，或即將開始胰島素滴注', t: 'chk', L: 2 },
+  riskDone: { l: '已確認上述共病（沒勾的項目視為「無」）', t: 'chk', L: 2, confirm: 1 },
+  h_vomit: { l: '嘔吐、鼻胃管引流或催吐（暴食症）', t: 'chk', L: 3 },
+  h_diarrhea: { l: '腹瀉、瀉藥、造口大量排出、絨毛腺瘤', t: 'chk', L: 3 },
+  h_diuretic: { l: 'Loop 或 thiazide 利尿劑（目前或近期）', t: 'chk', L: 3 },
+  h_shiftdrug: { l: '胰島素、β2 agonist、theophylline/caffeine、再餵食、急性壓力（頭部外傷等）', t: 'chk', L: 3 },
+  h_paralysis: { l: '反覆發作性無力或麻痺（常在飽餐、運動後）', t: 'chk', L: 3 },
+  h_thyro: { l: '甲狀腺亢進症狀或病史', t: 'chk', L: 3 },
+  h_intake: { l: '攝取極少（厭食、酗酒、長期禁食）', t: 'chk', L: 3 },
+  h_nephrotoxic: { l: 'Amphotericin B、aminoglycoside、cisplatin、foscarnet、高劑量 penicillin', t: 'chk', L: 3 },
+  h_cai: { l: 'Acetazolamide 或 topiramate', t: 'chk', L: 3 },
+  h_mc: { l: '甘草/甘草酸、fludrocortisone、高劑量類固醇、itraconazole/posaconazole', t: 'chk', L: 3 },
+  h_cushing: { l: 'Cushing 外觀，或疑異位 ACTH（如小細胞肺癌）', t: 'chk', L: 3 },
+  h_polyuria: { l: '多尿：滲透性利尿、阻塞解除後、ATN 恢復期', t: 'chk', L: 3 },
+  h_family: { l: '年輕即發病的高血壓、家族性低血鉀或近親婚配', t: 'chk', L: 3 },
+  histDone: { l: '已完成病史與用藥回顧（沒勾的項目視為「無」）', t: 'chk', L: 3, confirm: 1 },
+  uk: { l: 'Spot 尿鉀 UK', t: 'num', u: 'mEq/L', step: 1, L: 4 },
+  ucr: { l: 'Spot 尿肌酸酐 UCr', t: 'num', u: 'mg/dL', step: 1, L: 4, h: 'UK 與 UCr 都填，會自動算 UK/UCr' },
+  ukcr: { l: '或直接填 UK/UCr', t: 'num', u: 'mEq/g', step: 0.1, L: 4, h: '>13 為腎失鉀' },
+  uk24: { l: '或 24 小時尿鉀', t: 'num', u: 'mEq/day', step: 1, L: 4, h: '>30 腎失鉀；<25 非腎性' },
+  una: { l: 'Spot 尿鈉 UNa', t: 'num', u: 'mEq/L', step: 1, L: 4, h: '<30 時 spot 尿鉀可能失真' },
+  hco3: { l: '血清 HCO₃⁻（或 total CO₂）', t: 'num', u: 'mEq/L', step: 1, L: 5, h: '<22 酸中毒；>28 鹼中毒' },
+  na: { l: '血鈉 Na', t: 'num', u: 'mEq/L', step: 1, L: 5 },
+  cl: { l: '血氯 Cl', t: 'num', u: 'mEq/L', step: 1, L: 5, h: '與 Na、HCO₃⁻ 一起算 AG' },
+  bp: { l: '血壓／容量狀態', t: 'sel', L: 5, o: [['low', '正常或偏低（含容積不足）'], ['high', '高血壓']] },
+  ucl: { l: 'Spot 尿氯 UCl', t: 'num', u: 'mEq/L', step: 1, L: 6, h: '<20 支持嘔吐或遠期利尿劑' },
+  upH: { l: '尿 pH', t: 'num', u: '', step: 0.1, L: 6 },
+  uca: { l: '尿鈣（UCa/UCr）', t: 'sel', L: 6, o: [['low', '低尿鈣（<0.2 mmol/mmol，約 <0.07 mg/mg）'], ['normal', '正常或高尿鈣']] },
+  diurscreen: { l: '尿液利尿劑篩檢', t: 'sel', L: 6, o: [['neg', '陰性'], ['pos', '陽性']] },
+  raas: { l: '腎素／醛固酮', t: 'sel', L: 6, o: [['lh', '腎素抑制、醛固酮升高（ARR 升高）'], ['hh', '腎素升高、醛固酮升高'], ['ll', '腎素抑制、醛固酮也低'], ['normal', '無礦物皮質素過多的證據']] },
+  tsh: { l: '甲狀腺功能', t: 'sel', L: 6, o: [['low', 'TSH 抑制／FT4 升高'], ['normal', '正常']] },
+  evidence: { l: '主要病因的確認證據', t: 'sel', L: 7, o: [] }
+};
+
+/* ---------- candidate etiologies ---------- */
+const STATUS_RANK = { confirmed: 5, likely: 4, possible: 3, contrib: 2, unlikely: 1 };
+const STATUS_LABEL = { confirmed: '已確立', likely: '最可能', possible: '可能', contrib: '合併因素', unlikely: '較不可能' };
+
+function saltWasting(s, d) { return d.route === 'renal' && d.ab === 'alk' && s.bp === 'low' && d.uclLow === false; }
+
+const C = [
+  { id: 'pseudo', n: '假性低血鉀（檢體內細胞攝取鉀）', ev_l: '快速分離血漿重測 K 正常',
+    next: '以快速分離的血漿或血液氣體分析儀即時重測 K。', tx: '不需補鉀；以重測值決定處置。',
+    ev: s => s.pseudo ? ['likely', ['白血球極高，且檢體延遲處理']] : null },
+  { id: 'shift', n: '細胞內轉移（藥物、胰島素、β 腎上腺素作用、再餵食）', ev_l: '轉移誘因明確，移除後 K 回升，且沒有持續流失',
+    next: '找出並移除誘因；誘因去除後 K 應很快回升，UK/UCr 通常 <13 mEq/g。',
+    tx: '移除誘因（停 β2 agonist、治療 theophylline 中毒、調整胰島素或營養）。補鉀只要少量，誘因解除後容易反彈成高血鉀。',
+    ev: (s, d) => {
+      if (s.h_shiftdrug) return d.route === 'renal' ? ['contrib', ['有轉移誘因，但尿鉀高，表示另有腎失鉀']] : ['likely', ['有轉移誘因（胰島素、β2 agonist、theophylline、再餵食等）'].concat(d.route === 'extra' ? ['UK/UCr 低，符合非腎性'] : [])];
+      if (d.route === 'extra' && d.ab === 'normal' && !s.h_diarrhea && !s.h_vomit && !s.h_intake) return ['possible', ['尿鉀低且酸鹼正常：考慮轉移或攝取不足']];
+      return null;
+    } },
+  { id: 'tpp', n: s => (s.tsh === 'low' || s.h_thyro) ? '甲狀腺毒性週期性麻痺（TPP）' : '低血鉀性週期性麻痺（TPP／家族性）', ev_l: '週期性麻痺成立（發作性麻痺、UK/UCr 低、酸鹼正常；TPP 合併甲狀腺亢進）',
+    next: '驗 TSH/FT4；UK/UCr <22 mEq/g 且酸鹼正常支持轉移型。家族性者可考慮 CACNA1S/SCN4A 基因檢測。',
+    tx: '少量補鉀並每 1–2 h 測 K（反彈性高血鉀可達 40–60%）；TPP 可考慮非選擇性 β-blocker（propranolol），並治療甲狀腺亢進；避免高碳水化合物大餐與劇烈運動誘發。',
+    ev: (s, d) => {
+      const trig = s.sym === 'paralysis' || s.h_paralysis;
+      if (!trig) return null;
+      const w = [s.h_paralysis ? '反覆發作性麻痺' : '急性麻痺'];
+      let st = 'possible';
+      if (d.ukcr !== null) {
+        if (d.ukcr < 22) { st = 'likely'; w.push(`UK/UCr ${d.ukcr} <22 mEq/g（轉移型）`); }
+        else return ['unlikely', w.concat(`UK/UCr ${d.ukcr} ≥22 mEq/g：較像腎失鉀（RTA、Gitelman 等）`)];
+      } else if (d.route === 'extra') st = 'likely';
+      else if (d.route === 'renal') return ['unlikely', w.concat('24 h 尿鉀高：較像腎失鉀')];
+      if (d.ab === 'acid' || d.ab === 'alk') { w.push('有酸鹼異常（週期性麻痺通常酸鹼正常）'); if (st === 'likely') st = 'possible'; }
+      else if (d.ab === 'normal') w.push('酸鹼正常');
+      if (s.tsh === 'low' || s.h_thyro) w.push('有甲狀腺亢進證據');
+      return [st, w];
+    } },
+  { id: 'upperGI', n: '上消化道流失（嘔吐、胃管引流、催吐）', ev_l: '嘔吐或胃液流失明確，尿氯低，補 NaCl/KCl 後改善',
+    next: '尿氯 <20 支持；活動性嘔吐時尿 pH >7（重碳酸尿）且 UK/UCr 可偏高。無病史時，尿 Na/Cl 比明顯 >1 提示隱匿催吐。',
+    tx: '止吐、減少胃管引流（可考慮 PPI 減少胃酸流失）；以 0.9% NaCl 加 KCl 補充容積與氯。',
+    ev: (s, d) => {
+      const w = []; let st = null;
+      if (s.h_vomit) {
+        st = 'possible'; w.push('有嘔吐或胃管引流病史');
+        if (d.ab === 'alk') { st = 'likely'; w.push('代謝性鹼中毒'); }
+        if (d.uclLow === true) { st = 'likely'; w.push(`尿氯 ${d.ucl} <20`); }
+        if (d.uclLow === false) { w.push(`尿氯 ${d.ucl} ≥20：需排除同時使用利尿劑`); if (st === 'likely') st = 'possible'; }
+        if (d.ab === 'acid') { st = 'unlikely'; w.push('代謝性酸中毒不符合胃液流失'); }
+        if (d.route === 'renal' && d.upH !== null && d.upH > 7) w.push(`尿 pH ${d.upH} >7：活動性嘔吐的重碳酸尿造成腎失鉀`);
+      } else if (d.ab === 'alk' && d.uclLow === true && s.bp !== 'high') {
+        st = 'possible'; w.push('沒有嘔吐病史，但鹼中毒加上低尿氯：考慮隱匿催吐（暴食症）或藥效已消退的利尿劑');
+      }
+      return st ? [st, w] : null;
+    } },
+  { id: 'lowerGI', n: '下消化道流失（腹瀉、瀉藥、絨毛腺瘤）', ev_l: '腹瀉、瀉藥或絨毛腺瘤明確（病史、糞便檢查或內視鏡證實）',
+    next: '確認腹瀉量與瀉藥使用；尿 Na/Cl 比約 0.4 提示濫用瀉藥；UAG 負值（NH₄⁺ 排泄足夠）支持腸胃道來源。',
+    tx: '治療腹瀉、停用瀉藥；合併酸中毒時以 potassium citrate／bicarbonate 補充（嚴重時先以 KCl 拉到安全值）。',
+    ev: (s, d) => {
+      const w = []; let st = null;
+      if (s.h_diarrhea) {
+        st = 'possible'; w.push('有腹瀉或瀉藥病史');
+        if (d.route === 'extra') { st = 'likely'; w.push('UK/UCr 低（非腎性）'); }
+        if (d.ab === 'acid') { if (d.route !== 'renal') st = 'likely'; w.push('代謝性酸中毒（HCO₃⁻ 經腸道流失）'); }
+        if (d.route === 'renal' && d.ab !== 'acid') { st = 'unlikely'; w.push('尿鉀高：主要病因較可能在腎臟'); }
+      } else if (d.route === 'extra' && d.ab === 'acid') {
+        st = 'likely'; w.push('尿鉀低加上代謝性酸中毒：沒有腹瀉史時，考慮隱匿使用瀉藥或絨毛腺瘤');
+      }
+      if (st && d.ab === 'acid' && d.uag !== null) {
+        if (d.uag < 0) w.push(`UAG ${d.uag}（負值，NH₄⁺ 排泄足夠，支持腸胃道）`);
+        else { w.push(`UAG +${d.uag}（正值，較像遠端 RTA）`); if (st === 'likely' && d.route !== 'extra') st = 'possible'; }
+      }
+      return st ? [st, w] : null;
+    } },
+  { id: 'lowIntake', n: '攝取不足', ev_l: '攝取不足為主因（尿鉀低、沒有其他流失，補充後恢復）',
+    next: '單純攝取不足很少讓 K 降到很低，通常合併其他原因。',
+    tx: '營養評估與補充；注意再餵食症候群（同時監測磷、鎂）。',
+    ev: (s, d) => {
+      if (!s.h_intake) return null;
+      if (d.route === 'renal') return ['contrib', ['攝取少，但尿鉀高表示另有腎失鉀']];
+      if (d.route === 'extra' && d.ab === 'normal') return ['likely', ['攝取少、尿鉀低、酸鹼正常']];
+      return ['contrib', ['攝取不足常是合併因素']];
+    } },
+  { id: 'diuretic', n: '利尿劑（loop／thiazide，含隱匿使用）', ev_l: '確認使用利尿劑（處方紀錄或尿液篩檢陽性）',
+    next: '核對處方與藥袋；沒有病史但腎失鉀、鹼中毒且尿氯不低時，做尿液利尿劑篩檢。',
+    tx: '減量、停藥或改藥；仍需利尿時加 amiloride 或 MRA，或併用 ACEi/ARB；補 KCl。',
+    ev: (s, d) => {
+      const w = []; let st = null;
+      if (s.diurscreen === 'pos') return ['likely', ['尿液利尿劑篩檢陽性']];
+      if (s.h_diuretic) {
+        st = 'possible'; w.push('正在或近期使用 loop／thiazide');
+        if (d.route === 'renal' && d.ab !== 'acid') { st = 'likely'; w.push('腎失鉀'); }
+        if (d.ab === 'alk') w.push('代謝性鹼中毒');
+        if (d.route === 'extra') w.push('尿鉀低：利尿劑藥效可能已消退（遠期使用）');
+        if (d.ab === 'acid') { st = 'unlikely'; w.push('代謝性酸中毒不典型（除 acetazolamide 外）'); }
+      } else if (s.diurscreen === 'neg') {
+        return null;
+      } else if (d.route === 'renal' && d.ab === 'alk' && d.uclLow === false) {
+        st = 'possible'; w.push('腎失鉀、鹼中毒且尿氯不低：要先排除隱匿使用利尿劑');
+      } else if (d.route === 'extra' && d.ab === 'alk' && d.uclLow === true) {
+        st = 'possible'; w.push('尿鉀低、鹼中毒、低尿氯：可能是藥效已消退的利尿劑');
+      }
+      return st ? [st, w] : null;
+    } },
+  { id: 'dRTA', n: '遠端（第 1 型）腎小管酸中毒', ev_l: '遠端 RTA 成立（AG 正常的代謝性酸中毒、尿 pH >5.5、UAG 正值／尿 NH₄⁺ 低）',
+    next: '尿 pH >5.5（酸中毒下）＋UAG 正值支持；查自體免疫（Sjögren、SLE）、高尿鈣/腎結石、藥物（amphotericin、lithium）。',
+    tx: 'Potassium citrate 鹼化並補鉀；治療原發病；追蹤腎結石與骨病。',
+    ev: (s, d) => {
+      if (!(d.route === 'renal' && d.ab === 'acid')) return null;
+      if (d.agHigh) return ['unlikely', [`AG ${d.ag} 升高：較像酮酸等非吸收性陰離子`]];
+      const w = ['腎失鉀加上代謝性酸中毒' + (d.ag !== null ? `（AG ${d.ag}，正常）` : '')]; let st = 'possible';
+      if (d.upH !== null) {
+        if (d.upH > 5.5) { st = 'likely'; w.push(`酸中毒下尿 pH ${d.upH} >5.5（無法酸化尿液）`); }
+        else { st = 'unlikely'; w.push(`尿 pH ${d.upH} ≤5.5：尿液可酸化，較不像遠端 RTA`); }
+      }
+      if (d.uag !== null) {
+        if (d.uag > 0) w.push(`UAG +${d.uag}（NH₄⁺ 排泄不足）`);
+        else { w.push(`UAG ${d.uag}，負值：NH₄⁺ 排泄足夠，較不像遠端 RTA`); if (st === 'likely') st = 'possible'; }
+      }
+      return [st, w];
+    } },
+  { id: 'pRTA', n: '近端（第 2 型）RTA／Fanconi／碳酸酐酶抑制劑', ev_l: '近端 RTA／Fanconi 成立（重碳酸尿、腎性糖尿、低磷、低尿酸），或碳酸酐酶抑制劑所致',
+    next: '查尿糖（血糖正常時）、血磷、尿酸、尿蛋白；考慮 multiple myeloma、tenofovir、ifosfamide；碳酸酐酶抑制劑停藥試驗。',
+    tx: '治療病因、停用致病藥；鹼化需大劑量且會加重鉀流失，需同時給 potassium citrate；Fanconi 補磷。',
+    ev: (s, d) => {
+      if (!(d.route === 'renal' && d.ab === 'acid')) return (s.h_cai && d.ab === 'acid') ? ['possible', ['使用碳酸酐酶抑制劑，合併代謝性酸中毒']] : null;
+      if (d.agHigh) return null;
+      const w = ['腎失鉀加上高氯性代謝性酸中毒']; let st = 'possible';
+      if (s.h_cai) { st = 'likely'; w.push('使用 acetazolamide/topiramate（近端 HCO₃⁻ 流失）'); }
+      if (d.upH !== null && d.upH <= 5.5) w.push(`尿 pH ${d.upH} ≤5.5（血中 HCO₃⁻ 低於閾值時，近端 RTA 仍能酸化尿液）`);
+      if (d.upH !== null && d.upH > 5.5 && !s.h_cai) { st = 'unlikely'; w.push(`尿 pH ${d.upH} >5.5：較像遠端 RTA（若正在補鹼則不適用）`); }
+      if (d.phos !== null && d.phos < 2.5) { w.push(`血磷 ${d.phos}：考慮 Fanconi 症候群`); if (st === 'possible') st = 'likely'; }
+      return [st, w];
+    } },
+  { id: 'anion', n: 'DKA／酮酸或其他非吸收性陰離子（toluene 等）', ev_l: 'DKA／酮酸或其他非吸收性陰離子（toluene 等）確立',
+    next: '查血糖、血酮（β-hydroxybutyrate）、滲透壓；吸膠史（toluene）。',
+    tx: '依 DKA/HHS 流程：K <3.5 先補鉀、暫緩胰島素；處理酮酸來源（飢餓、酒精）或停止接觸 toluene。',
+    ev: (s, d) => {
+      if (s.dka) return ['likely', ['DKA/HHS：滲透性利尿與酮酸陰離子造成腎失鉀']];
+      if (d.route === 'renal' && d.ab === 'acid' && d.agHigh) return ['likely', [`AG ${d.ag}，升高的代謝性酸中毒合併腎失鉀：酮酸（DKA、酒精、飢餓）或 toluene（hippurate）`]];
+      return null;
+    } },
+  { id: 'tubularDrug', n: '藥物性腎小管失鉀', ev_l: '腎毒性藥物導致腎小管失鉀（停藥後改善）',
+    next: '核對藥物與劑量；amphotericin B、aminoglycoside、cisplatin 常同時造成低鎂。',
+    tx: '評估停藥或換藥；同時補鉀、補鎂；amphotericin 可考慮改用 liposomal 劑型或補充生理食鹽水。',
+    ev: (s, d) => s.h_nephrotoxic ? (d.route === 'renal' ? ['likely', ['使用 amphotericin B／aminoglycoside／cisplatin／foscarnet／高劑量 penicillin', '腎失鉀']] : d.route === 'extra' ? ['unlikely', ['尿鉀低，不符合藥物性腎失鉀']] : ['possible', ['使用腎小管毒性藥物']]) : null },
+  { id: 'hypoMg', n: '低鎂血症（促進腎失鉀）', ev_l: '原發性低鎂導致腎失鉀，補鎂後 K 才能矯正',
+    next: '補鎂後追蹤 K；尋找低鎂原因（PPI、利尿劑、腹瀉、酒精、cisplatin、Gitelman）。',
+    tx: '補鎂（見治療計畫），否則單補鉀會持續失敗。', ev: () => null },
+  { id: 'polyuria', n: '多尿／滲透性利尿', ev_l: '多尿或滲透性利尿導致腎失鉀',
+    next: '測尿量與尿滲透壓；尋找糖尿、mannitol、阻塞解除後利尿、ATN 恢復期。',
+    tx: '治療多尿原因，依尿量與尿鉀補充。',
+    ev: (s, d) => s.h_polyuria && d.route !== 'extra' ? ['possible', ['多尿或滲透性利尿增加遠端流量與鉀排泄']] : null },
+  { id: 'bartter', n: 'Bartter 症候群', ev_l: 'Bartter 症候群（基因或典型表型，且利尿劑篩檢陰性）',
+    next: '尿液利尿劑篩檢陰性是前提（loop 利尿劑可完全模擬）；尿鈣正常或高、多數幼年發病；基因檢測確認。',
+    tx: 'KCl、補鹽與水分；NSAID（indomethacin）、保鉀利尿劑需腎臟專科評估。',
+    ev: (s, d) => {
+      if (!saltWasting(s, d)) return null;
+      const w = ['腎失鉀、鹼中毒、血壓不高、尿氯不低'];
+      if (s.uca === 'low') return ['unlikely', w.concat('低尿鈣：較像 Gitelman')];
+      if (s.diurscreen === 'pos') return ['unlikely', w.concat('利尿劑篩檢陽性')];
+      let st = 'possible';
+      if (s.uca === 'normal') w.push('尿鈣正常或偏高');
+      if (s.h_diuretic && s.diurscreen !== 'neg') { w.push('正在使用利尿劑：loop 利尿劑可完全模擬 Bartter'); return ['possible', w]; }
+      if (s.diurscreen === 'neg' && s.uca === 'normal') { st = 'likely'; w.push('利尿劑篩檢陰性'); }
+      if (s.h_family) w.push('家族史或年輕發病');
+      return [st, w];
+    } },
+  { id: 'gitelman', n: 'Gitelman 症候群', ev_l: 'Gitelman 症候群（SLC12A3 基因，或典型低鎂、低尿鈣表型，且利尿劑篩檢陰性）',
+    next: '低尿鈣（UCa/UCr <0.2 mmol/mmol）＋低鎂；需先以尿液篩檢排除 thiazide；SLC12A3 基因檢測確認。',
+    tx: '長期 KCl 加鎂補充（鎂優先用有機鹽）、高鹽飲食；控制不佳可加 amiloride、spironolactone/eplerenone 或 NSAID（專科評估）。',
+    ev: (s, d) => {
+      if (!saltWasting(s, d)) return null;
+      const w = ['腎失鉀、鹼中毒、血壓不高、尿氯不低'];
+      if (s.uca === 'normal') return ['unlikely', w.concat('尿鈣不低：較像 Bartter（或 loop 利尿劑）')];
+      if (s.diurscreen === 'pos') return ['unlikely', w.concat('利尿劑篩檢陽性')];
+      let st = 'possible';
+      if (s.uca === 'low') w.push('低尿鈣');
+      if (d.mgLow === true) w.push(`低鎂（${d.mg} mg/dL）`);
+      if (s.h_diuretic && s.diurscreen !== 'neg') { w.push('正在使用利尿劑：thiazide 可完全模擬 Gitelman'); return ['possible', w]; }
+      if (s.diurscreen === 'neg' && s.uca === 'low') { st = 'likely'; w.push('利尿劑篩檢陰性'); }
+      return [st, w];
+    } },
+  { id: 'pa', n: '原發性醛固酮增多症（PA）', ev_l: 'PA 成立（ES 2025：腎素抑制＋醛固酮升高＋ARR 升高；打算手術者已完成分型）',
+    next: 'ES 2025：腎素抑制＋醛固酮升高＋ARR 升高即可診斷，確認試驗不再必要（中間機率、又考慮手術時才做）。打算手術者安排腎上腺 CT 與 AVS 分型。篩檢陰性但有低血鉀者，補鉀後重驗。',
+    tx: 'MRA（spironolactone/eplerenone）為第一線藥物；單側病灶可行腹腔鏡腎上腺切除。補鉀至正常。',
+    ev: (s, d) => {
+      if (s.bp !== 'high') return null;
+      const w = ['高血壓'];
+      if (s.raas === 'lh') return ['likely', w.concat('腎素抑制、醛固酮升高（ARR 升高）')];
+      if (s.raas === 'hh') return ['unlikely', w.concat('腎素升高：屬續發性醛固酮增多')];
+      if (s.raas === 'll') return ['unlikely', w.concat('醛固酮低：屬非醛固酮的礦物皮質素作用')];
+      if (d.route === 'extra') return ['unlikely', w.concat('尿鉀低，不符合礦物皮質素過多')];
+      if (d.route === 'renal') w.push('腎失鉀');
+      if (d.ab === 'alk') w.push('代謝性鹼中毒');
+      if (s.raas === 'normal') w.push('篩檢陰性：低血鉀會壓低醛固酮造成偽陰性，補鉀後應重驗');
+      else w.push('高血壓合併低血鉀是 PA 的典型表現，需驗腎素與醛固酮');
+      return ['possible', w];
+    } },
+  { id: 'secAldo', n: '續發性醛固酮增多（腎動脈狹窄、惡性高血壓、renin 腫瘤）', ev_l: '續發性醛固酮增多（腎動脈狹窄、renin 腫瘤、惡性高血壓）確立',
+    next: '腎動脈超音波、CTA 或 MRA；評估惡性高血壓的標的器官損傷；確認是否在用利尿劑。',
+    tx: '依病因：腎動脈血管重建、控制惡性高血壓、切除 renin 腫瘤；ACEi/ARB 須注意腎功能。',
+    ev: s => {
+      if (s.bp !== 'high') return null;
+      if (s.raas === 'hh') return ['likely', ['高血壓，腎素與醛固酮都高：腎動脈狹窄、惡性高血壓、renin 腫瘤，或高血壓病人使用利尿劑']];
+      return null;
+    } },
+  { id: 'ame', n: '甘草／AME／azole／外源性礦物皮質素', ev_l: '確認暴露於甘草、AME、azole 或外源性礦物皮質素，停用後改善',
+    next: '詳問甘草（中藥、甘草糖、甘草茶）、itraconazole/posaconazole、fludrocortisone；先天性 AME 可驗 cortisol/cortisone 比值。',
+    tx: '停止暴露；停用後需數週才恢復；過渡期可用 MRA 或 amiloride。',
+    ev: s => {
+      if (s.raas === 'll' && s.bp === 'high') return s.h_mc ? ['likely', ['腎素與醛固酮都低，且有甘草、azole 或外源礦物皮質素暴露']] : ['possible', ['腎素與醛固酮都低：需詢問甘草、azole、類固醇使用']];
+      if (s.h_mc && s.bp === 'high' && !s.raas) return ['possible', ['有甘草、azole 或礦物皮質素暴露，合併高血壓']];
+      if (s.h_mc && s.raas && s.raas !== 'll') return ['unlikely', ['RAAS 型態不符（預期腎素與醛固酮都低）']];
+      return null;
+    } },
+  { id: 'liddle', n: 'Liddle 症候群', ev_l: 'Liddle 症候群（SCNN1A/B/G 基因，或家族史＋amiloride 有效）',
+    next: '排除外源暴露與 Cushing 後，做 SCNN1A/B/G 基因檢測；家族篩檢。',
+    tx: 'Amiloride 或 triamterene（spironolactone 無效）；限鹽。',
+    ev: s => {
+      if (s.bp !== 'high') return null;
+      if (s.raas === 'll') return (s.h_family && !s.h_mc && !s.h_cushing) ? ['likely', ['腎素與醛固酮都低', '年輕發病或家族史，且沒有外源暴露或 Cushing 線索']] : ['possible', ['腎素與醛固酮都低']];
+      if (s.h_family && !s.raas) return ['possible', ['年輕高血壓或家族史，合併低血鉀']];
+      return null;
+    } },
+  { id: 'cushing', n: 'Cushing 症候群（尤其異位 ACTH）', ev_l: 'Cushing 症候群或異位 ACTH 確立',
+    next: '1 mg dexamethasone 抑制試驗、24 h 尿游離皮質醇或深夜唾液皮質醇；低血鉀明顯者優先考慮異位 ACTH（驗 ACTH、胸腹部影像）。',
+    tx: '治療病因（手術、腫瘤治療）；過渡期可用 MRA 控制低血鉀與高血壓；類固醇合成抑制劑由內分泌科評估。',
+    ev: (s, d) => {
+      if (s.raas === 'll' && s.bp === 'high') return s.h_cushing ? ['likely', ['腎素與醛固酮都低，且有 Cushing 外觀或異位 ACTH 線索']] : ['possible', ['腎素與醛固酮都低：需篩檢皮質醇過多（尤其異位 ACTH）']];
+      if (s.h_cushing && (s.bp === 'high' || d.route === 'renal')) return ['possible', ['有 Cushing 線索，合併低血鉀']];
+      return null;
+    } },
+  { id: 'cahDoc', n: '先天性腎上腺增生（11β／17α）或 DOC 分泌腫瘤', ev_l: 'CAH（11β／17α-hydroxylase 缺乏）或 DOC 分泌腫瘤確立',
+    next: '驗 11-deoxycortisol、DOC、性類固醇；腎上腺影像。罕見。',
+    tx: 'CAH：糖皮質素補充；DOC 腫瘤：手術。',
+    ev: s => (s.raas === 'll' && s.bp === 'high' && !s.h_mc) ? ['possible', ['腎素與醛固酮都低（罕見病因）']] : null }
+];
+F.evidence.o = C.map(c => [c.id, c.ev_l]);
+
+/* ---------- derived values ---------- */
+function derive(s) {
+  const d = {};
+  d.k = num(s.k);
+  const uk = num(s.uk), ucr = num(s.ucr);
+  d.uk = uk;
+  if (uk !== null && ucr) { d.ukcr = r1(100 * uk / ucr); d.ukcrCalc = true; } else d.ukcr = num(s.ukcr);
+  d.uk24 = num(s.uk24); d.una = num(s.una);
+  if (d.ukcr !== null) d.route = d.ukcr > 13 ? 'renal' : 'extra';
+  else if (d.uk24 !== null) d.route = d.uk24 > 30 ? 'renal' : d.uk24 < 25 ? 'extra' : 'grey';
+  else d.route = null;
+  d.hco3 = num(s.hco3);
+  d.ab = d.hco3 === null ? null : d.hco3 < 22 ? 'acid' : d.hco3 > 28 ? 'alk' : 'normal';
+  const na = num(s.na), cl = num(s.cl);
+  d.ag = (na !== null && cl !== null && d.hco3 !== null) ? r1(na - cl - d.hco3) : null;
+  d.agHigh = d.ag === null ? null : d.ag > 12;
+  d.ucl = num(s.ucl); d.uclLow = d.ucl === null ? null : d.ucl < 20;
+  d.upH = num(s.upH);
+  d.uag = (d.una !== null && uk !== null && d.ucl !== null) ? r1(d.una + uk - d.ucl) : null;
+  d.mg = num(s.mg); d.mgLow = d.mg === null ? null : d.mg < 1.7;
+  d.phos = num(s.phos);
+  d.egfr = num(s.egfr);
+  d.renalImp = (d.egfr !== null && d.egfr < 30) || !!s.oliguria;
+  d.spotUnreliable = d.una !== null && d.una < 30;
+  return d;
+}
+
+function band(k) {
+  if (k === null) return '未輸入';
+  if (k < 2.5) return '重度低血鉀';
+  if (k < 3.0) return '中度低血鉀';
+  if (k < 3.5) return '輕度低血鉀';
+  return '未達低血鉀';
+}
+
+/* ---------- urgency ---------- */
+function urgency(s, d) {
+  const k = d.k;
+  if (k === null) return { lvl: 'unknown', label: '尚未分級', reasons: [], provisional: true, missing: ['血清鉀'] };
+  if (k >= 3.5) return { lvl: 'none', label: '未達低血鉀', reasons: [], provisional: false, missing: [] };
+  const reasons = []; let lvl = 'routine';
+  if (k < 2.5) { lvl = 'emergent'; reasons.push(`K ${k} <2.5`); }
+  if (s.ecg === 'arrhythmia') { lvl = 'emergent'; reasons.push('心律不整'); }
+  if (s.sym === 'paralysis') { lvl = 'emergent'; reasons.push('麻痺／呼吸肌無力'); }
+  if (s.rhabdo) { lvl = 'emergent'; reasons.push('橫紋肌溶解'); }
+  if (lvl !== 'emergent') {
+    if (k < 3.0) { lvl = 'urgent'; reasons.push(`K ${k} <3.0`); }
+    if (s.ecg === 'changes') { lvl = 'urgent'; reasons.push('低鉀 ECG 變化'); }
+    if (s.sym === 'weak') { lvl = 'urgent'; reasons.push('明顯肌無力／ileus'); }
+    if (s.dka) { lvl = 'urgent'; reasons.push('DKA/HHS：胰島素與輸液會使 K 再下降'); }
+    if ((s.cardiac || s.digoxin) && lvl === 'routine') reasons.push('心臟病或 digoxin：輕度低鉀也應積極矯正');
+    if (s.cirrhosis && lvl === 'routine') reasons.push('肝硬化：低鉀會誘發肝性腦病變');
+  }
+  const missing = [];
+  if (!s.ecg) missing.push('心電圖');
+  if (!s.sym) missing.push('症狀');
+  const label = { emergent: '緊急', urgent: '需積極補充', routine: '穩定／輕度' }[lvl];
+  return { lvl, label, reasons, provisional: lvl !== 'emergent' && missing.length > 0, missing };
+}
+
+/* ---------- next-step asks ---------- */
+const filled = (s, f) => { const v = s[f]; return !(v === '' || v === null || v === undefined || v === false); };
+
+function buildAsks(s, d, res) {
+  const A = [];
+  const add = (key, f, t, why, pri, lab) => A.push({ key, f, t, why, pri, lab: !!lab });
+  if (d.k === null) {
+    add('k', ['k'], '血清鉀 K⁺', '整個流程從確認低血鉀開始；同一管血請一併驗 Mg、Na、Cl、HCO₃⁻、BUN/Cr、血糖。', 'now', true);
+    return A;
+  }
+  if (d.k >= 3.5) return A;
+  const hist = Object.keys(F).filter(f => F[f].L === 3);
+  if (!s.ecg) add('ecg', ['ecg'], '12 導程心電圖', '決定緊急度與是否需要連續監測；注意 QT、U 波與心律不整。', 'now', true);
+  if (!s.sym) add('sym', ['sym', 'rhabdo'], '症狀與肌力', '麻痺、呼吸肌無力或橫紋肌溶解屬於緊急狀況，需要靜脈補鉀與監測。', 'now');
+  if (d.mg === null) add('mg', ['mg'], '血鎂 Mg', '低鎂時單補鉀難以矯正，也會增加心律不整風險；請與第一管血一起送。', 'now', true);
+  if (d.egfr === null && !s.oliguria) add('renal', ['egfr', 'oliguria'], '腎功能與尿量', 'eGFR <30 或少尿時，補鉀劑量與速率要降低，否則容易矯正過頭變成高血鉀。', 'now', true);
+  if (!s.po) add('po', ['po', 'access'], '給藥途徑', '決定口服或靜脈補鉀，以及周邊靜脈的速率與濃度上限。', 'now');
+  if (!s.riskDone) add('risk', ['cardiac', 'digoxin', 'cirrhosis', 'dka', 'riskDone'], '高風險共病', '心臟病或 digoxin 時目標 K ≥4.0；DKA 時 K <3.5 要暫緩胰島素；肝硬化時低鉀會誘發肝性腦病變。', 'now');
+  if (!s.histDone) add('hist', hist, '病史與用藥回顧', '多數低血鉀的病因在病史中就很明顯（嘔吐、腹瀉、利尿劑）；轉移性誘因會改變補鉀策略。', 'now');
+
+  // first-round labs
+  if (d.route === null) add('urineK', ['uk', 'ucr', 'una', 'uk24'], 'Spot 尿液：K、Cr（＋Na、Cl）', 'UK/UCr 是區分腎性與非腎性的關鍵（>13 mEq/g 為腎失鉀）；最好在補鉀前留尿。同一管尿請一併驗 Na、Cl、pH。', 'next', true);
+  else if (d.route === 'grey') add('urineKcr', ['uk', 'ucr'], 'Spot UK/UCr', '24 小時尿鉀 25–30 mEq/day 屬灰色地帶，用 UK/UCr 再判斷一次。', 'next', true);
+  if (d.hco3 === null) add('hco3', ['hco3', 'na', 'cl'], '血清 HCO₃⁻（＋Na、Cl）', '酸鹼狀態是第二個分岔點；有 Na、Cl 就能計算陰離子間隙。', 'next', true);
+  if (!s.bp) add('bp', ['bp'], '血壓與容量狀態', '腎失鉀合併鹼中毒時，血壓決定要走「尿氯」還是「腎素/醛固酮」分支。', 'next');
+
+  const R = d.route, AB = d.ab;
+  if (R === 'renal' && AB === 'acid') {
+    if (d.ag === null && d.hco3 !== null) add('ag', ['na', 'cl'], '血鈉、血氯（算 AG）', 'AG 升高指向酮酸、toluene；AG 正常指向 RTA。', 'next', true);
+    if (!d.agHigh && d.upH === null) add('upH', ['upH'], '尿 pH', '酸中毒時尿 pH >5.5 支持遠端 RTA；≤5.5 較像近端 RTA 或腸胃道流失。', 'next', true);
+    if (!d.agHigh && d.uag === null) add('uag', ['una', 'ucl'], '尿 Na、尿 Cl（算 UAG）', 'UAG 正值表示 NH₄⁺ 排泄不足（遠端 RTA）；負值支持腸胃道流失。', 'later', true);
+    if (!d.agHigh && d.phos === null) add('phos', ['phos'], '血磷', '低磷提示 Fanconi 症候群（近端 RTA）。', 'later', true);
+  }
+  if (AB === 'alk' && s.bp !== 'high' && d.ucl === null) add('ucl', ['ucl'], 'Spot 尿氯 UCl', '尿氯 <20 指向嘔吐或藥效已消退的利尿劑；≥20 指向利尿劑、Bartter、Gitelman。', 'next', true);
+  if (R === 'renal' && AB === 'alk' && s.bp === 'low' && d.uclLow === true && d.upH === null) add('upHv', ['upH'], '尿 pH', '尿 pH >7 表示活動性嘔吐的重碳酸尿，說明為何 UK/UCr 偏高。', 'later', true);
+  if (saltWasting(s, d)) {
+    if (!s.diurscreen) add('diurscreen', ['diurscreen'], '尿液利尿劑篩檢', 'Thiazide 可完全模擬 Gitelman、loop 可完全模擬 Bartter，診斷遺傳性腎小管病前必須先排除。', 'next', true);
+    if (!s.uca) add('uca', ['uca'], '尿鈣（UCa/UCr）', '低尿鈣支持 Gitelman；正常或高尿鈣支持 Bartter。', 'next', true);
+  }
+  if (s.bp === 'high' && !s.raas) add('raas', ['raas'], '血漿腎素與醛固酮（ARR）', '高血壓合併低血鉀要篩檢 PA（ES 2025 建議所有高血壓病人都篩檢）；腎素/醛固酮型態可區分 PA、續發性與其他礦物皮質素過多。', R === 'extra' ? 'later' : 'next', true);
+  if ((s.sym === 'paralysis' || s.h_paralysis || s.h_thyro) && !s.tsh) add('tsh', ['tsh'], 'TSH／FT4', '週期性麻痺要排除甲狀腺毒性（TPP）；TPP 可用 propranolol，且補鉀後易反彈。', 'next', true);
+  if (R === 'renal' && AB === 'normal' && d.ucl === null) add('uclN', ['ucl', 'upH'], '尿氯、尿 pH', '酸鹼正常的腎失鉀：考慮低鎂、藥物、多尿或輕度鹽分流失腎病，尿氯可協助分類。', 'later', true);
+  if (d.ukcrCalc && d.una === null && R) add('una', ['una'], 'Spot 尿鈉 UNa', 'UNa <30 時遠端流量不足，spot 尿鉀判讀可能失真。', 'later', true);
+
+  // confirmation
+  if (!s.evidence && res.lead.length && res.lead[0].status === 'likely' && res.stageCore) {
+    const L = res.lead[0];
+    add('evidence', ['evidence'], `確認主要病因：${L.name}`, L.next, 'next');
+  }
+  return A;
+}
+
+/* ---------- treatment ---------- */
+function treatment(s, d, u, res) {
+  if (d.k === null || d.k >= 3.5) return null;
+  const k = d.k;
+  const ids = res.final ? [res.final.id] : res.lead.filter(c => c.status === 'likely').map(c => c.id);
+  const tpp = ids.includes('tpp');
+  const shiftDom = d.route !== 'renal' && (tpp || ids.includes('shift')) && !s.dka;
+  const cardiacRisk = !!(s.cardiac || s.digoxin);
+  const T = { now: [], k: [], prep: [], mg: [], special: [], cause: [], follow: [], orders: [], target: '', route: '', deficit: null, shiftDom, tpp };
+
+  // target
+  if (cardiacRisk) T.target = '≥4.0 mEq/L（心臟病或 digoxin）';
+  else if (s.cirrhosis) T.target = '≥3.5–4.0 mEq/L（肝硬化：減少氨生成）';
+  else T.target = '先讓 K 持續 >3.0–3.5 且症狀消失，之後在數天到數週內補足缺口';
+
+  // route
+  let route;
+  if (u.lvl === 'emergent') route = s.po === 'no' ? 'IV' : 'IV＋PO';
+  else if (u.lvl === 'urgent') route = s.po === 'no' ? 'IV' : (s.ecg === 'changes' ? 'IV＋PO' : 'PO');
+  else route = s.po === 'no' ? 'IV' : 'PO';
+  if (!s.po) route += '（尚未確認可否口服）';
+  T.route = route;
+  const iv = route.startsWith('IV');
+
+  // immediate
+  if (u.lvl === 'emergent') T.now.push('立即接上連續心電圖監測並建立靜脈路徑；在可密切監測的環境（急診/加護）處理。');
+  if (!s.ecg) T.now.push('還沒有心電圖：立即做 12 導程 ECG（看 QT、U 波、心律不整）。');
+  const needTele = s.ecg === 'changes' || s.ecg === 'arrhythmia' || cardiacRisk || tpp || u.lvl === 'emergent';
+  if (needTele) T.now.push('需要連續 ECG／telemetry（ECG 變化、心臟病或 digoxin、週期性麻痺、IV 速率 >10 mEq/h）。');
+  if (s.sym === 'paralysis') T.now.push('評估呼吸肌：監測呼吸型態、SpO₂，必要時做血液氣體並準備呼吸支持。');
+  if (s.ecg === 'arrhythmia') T.now.push('Torsades 或 QT 延長：依 ACLS 給 MgSO₄，並停用延長 QT 的藥物。');
+
+  // DKA
+  if (s.dka) {
+    T.special.push(`DKA/HHS 且 K ${k} <3.5：先暫緩胰島素，補鉀到 ≥3.5 再開始（2024 ADA/EASD/JBDS/AACE/DTS 共識；UpToDate 用 >3.3）。補鉀速率 20–30 mEq/h（UpToDate）：於 0.45% NaCl 每公升加 KCl 40–60 mEq；需中心靜脈與連續 ECG，每 1–2 h 測 K。`);
+  }
+
+  // K plan
+  if (shiftDom) {
+    T.k.push('轉移型低血鉀：體內總鉀不缺，補鉀的目的是解除危險，而不是補足缺口。');
+    T.k.push('少量給予（例如 KCl ≤10 mEq/h），症狀緩解或 K ≥3.0 即停；每 1–2 h 測 K。');
+    T.k.push('警惕反彈性高血鉀：週期性麻痺補鉀後 40–60% 會發生（平均僅給 63 mEq）。');
+    if (tpp) T.k.push('TPP 或交感神經亢進（頭部外傷、theophylline 中毒）：可考慮非選擇性 β-blocker（propranolol），能快速逆轉且不會反彈；同時治療甲狀腺亢進。劑量依專科或院內流程。');
+  } else {
+    if (u.lvl === 'emergent') {
+      T.k.push('靜脈 KCl 10–20 mEq/h（周邊 ≤10 mEq/h 較不刺激；>10 mEq/h 要用輸液幫浦並接連續 ECG）。');
+      T.k.push('危及生命時（惡性心律不整、呼吸肌麻痺）起始可短暫達 40 mEq/h，須經中心靜脈或多條周邊靜脈。');
+      if (s.po !== 'no') T.k.push('可同時口服 KCl 20 mEq q2–3h，或 40 mEq tid–qid。');
+    } else if (u.lvl === 'urgent') {
+      if (s.po === 'no') T.k.push('靜脈 KCl 10 mEq/h（周邊）；有中心靜脈與連續 ECG 時可到 20 mEq/h。');
+      else {
+        T.k.push('口服 KCl 40 mEq tid–qid，或 20 mEq q2–3h（併用 IV 時）；單次不超過 40 mEq，以減少腸胃刺激。');
+        if (s.ecg === 'changes') T.k.push('有 ECG 變化：加上靜脈 KCl 10 mEq/h，並接連續 ECG。');
+      }
+    } else {
+      if (s.po === 'no') T.k.push('靜脈 KCl 加入生理食鹽水（周邊 20–60 mEq/L），≤10 mEq/h。');
+      else T.k.push('口服 KCl 10–20 mEq，每天 2–4 次（20–80 mEq/day）。');
+    }
+    T.k.push('口服 40–60 mEq 後血清 K 可暫時上升 1–1.5 mEq/L，數小時內又會回落（鉀進入細胞），所以要分次給並持續追蹤。');
+    if (!s.dka) {
+      const lo = Math.round((4 - k) * 200 / 10) * 10, hi = Math.round((4 - k) * 400 / 10) * 10;
+      T.deficit = { lo, hi };
+    }
+    if (s.h_vomit || s.h_diarrhea || s.h_diuretic || d.route === 'renal') T.k.push('有持續流失（嘔吐、腹瀉、利尿劑或腎失鉀）時，補充量要再加上流失量；穩定的腎失鉀單靠補鉀效果有限，需加保鉀利尿劑。');
+  }
+  if (iv) {
+    T.k.push('靜脈輸液用生理食鹽水稀釋，避免含葡萄糖的溶液（刺激胰島素分泌，K 可再降 0.2–1.4 mEq/L）。');
+    T.k.push('每袋上限：1000 mL ≤60 mEq；周邊 minibag 100–200 mL ≤10 mEq；中心 minibag 100 mL ≤40 mEq。袋內 >40 mEq 或速率 >10 mEq/h 時用輸液幫浦。');
+  }
+  if (d.renalImp) T.k.push(`腎功能不全${d.egfr !== null ? `（eGFR ${d.egfr}）` : ''}${s.oliguria ? '或少尿' : ''}：降低劑量與速率（例如減半），每 1–2 h 測 K；避免保鉀利尿劑。`);
+  if (s.rhabdo) T.k.push('橫紋肌溶解：肌肉釋出的鉀會掩蓋實際缺鉀，每 4–6 h 測 K，避免補過頭。');
+  T.k.push(shiftDom ? '追蹤：每 1–2 h 測 K，直到穩定。' : 'K 每 2–4 h 追蹤，直到持續 >3.0–3.5 且症狀消失，再降為輕中度劑量。');
+
+  // preparation
+  if (d.ab === 'acid' && !s.dka) T.prep.push('代謝性酸中毒（RTA、腹瀉）：口服優先用 potassium citrate 或 bicarbonate（靜脈只有 K acetate）。K 很低時先用 KCl 拉到安全值再補鹼；若先補鹼，K 會更低。');
+  else T.prep.push('首選 KCl：鹼中毒常合併缺氯，非氯鉀鹽在鹼中毒時保留的鉀只有 KCl 的約 40%。');
+  if (d.phos !== null && d.phos < 2.5) T.prep.push(`低磷（${d.phos} mg/dL）：部分改用磷酸鉀。`);
+
+  // magnesium
+  if (d.mg === null) T.mg.push('尚未驗 Mg：請補驗。低鎂會讓低血鉀很難矯正，也會增加 torsades 風險。');
+  else if (d.mgLow) {
+    T.mg.push(`Mg ${d.mg} mg/dL 偏低：與補鉀同時或優先補鎂（例：MgSO₄ 2 g IV，輸注 ≥1 h，依血鎂與腎功能重複）。${d.renalImp ? '腎功能不全時減量並密切追蹤血鎂。' : ''}`);
+    T.mg.push('長期：停用或減少造成低鎂的藥物（PPI、利尿劑）；口服鎂需分次給以減少腹瀉。');
+  } else T.mg.push(`Mg ${d.mg} mg/dL：目前不需補鎂；低血鉀反覆或難以矯正時再驗。`);
+
+  // special
+  if (cardiacRisk) T.special.push('心臟病或 digoxin：低鉀會加重 digoxin 毒性與心律不整，目標 K ≥4.0，並追蹤 digoxin 濃度。');
+  if (s.cirrhosis) T.special.push('肝硬化：低鉀增加腎臟氨生成，可能誘發肝性腦病變，即使輕度也應矯正。');
+  if (d.ab === 'acid' && !s.dka) T.special.push('合併酸中毒時，若打算給 bicarbonate，要先補鉀。');
+
+  // cause-specific
+  const causeSrc = res.final ? [res.final] : res.lead.filter(c => c.status === 'likely' || c.status === 'possible').slice(0, 3);
+  causeSrc.forEach(c => T.cause.push({ name: c.name, tx: c.tx, tentative: !res.final }));
+  const renalWaste = ids.some(i => ['diuretic', 'gitelman', 'bartter', 'pa', 'liddle', 'ame', 'cushing', 'secAldo'].includes(i));
+  if (renalWaste) T.follow.push(`持續腎失鉀：保鉀利尿劑比單純補鉀有效（amiloride 優先；PA 用 spironolactone/eplerenone；Liddle 用 amiloride）。與鉀補充併用時要密切追蹤，尤其是 eGFR 低、使用 ACEi/ARB 或心衰竭者。${d.renalImp ? '目前腎功能不全，使用前要特別謹慎。' : ''}`);
+  T.follow.push('K 穩定後改為維持劑量；每天追蹤 K、Mg 直到穩定；出院前要確立病因並安排門診追蹤。');
+
+  // example orders
+  const periph = s.access !== 'central';
+  if (shiftDom) T.orders.push('KCl 10 mEq + 0.9% NaCl 100 mL IV 1 h，結束後 1 h 測 K 再決定是否續給。');
+  else {
+    if (iv) {
+      if (periph) {
+        T.orders.push(`0.9% NaCl 1000 mL + KCl 40 mEq（40 mEq/L），IV ${d.renalImp ? '125 mL/h（約 5 mEq/h）' : '250 mL/h（約 10 mEq/h）'}，使用輸液幫浦。`);
+        T.orders.push('或 KCl 10 mEq + 0.9% NaCl 100 mL，IV 1 h（周邊 minibag），可重複，每 20–40 mEq 後測 K。');
+      } else {
+        T.orders.push(`KCl 20 mEq + 水 100 mL，經中心靜脈 IV 1 h（20 mEq/h），連續 ECG${d.renalImp ? '；腎功能不全建議先 10 mEq/h' : ''}。`);
+      }
+    }
+    if (!route.startsWith('IV') || route.includes('PO')) {
+      if (u.lvl === 'routine') T.orders.push(`KCl 口服 ${d.renalImp ? '10 mEq bid' : '20 mEq bid–tid'}，隔天測 K、Mg。`);
+      else T.orders.push(`KCl 口服 ${d.renalImp ? '20 mEq q4h × 2 劑' : '40 mEq q4–6h × 3 劑'}，每劑後 2–4 h 測 K。`);
+    }
+  }
+  if (d.mgLow) T.orders.push(`MgSO₄ ${d.renalImp ? '1 g' : '2 g'} + 0.9% NaCl 100 mL，IV 1–2 h。`);
+  return T;
+}
+
+/* ---------- main evaluation ---------- */
+function evaluate(s0) {
+  const s = Object.assign({}, s0);
+  const d = derive(s);
+  const u = urgency(s, d);
+  const res = { d, u, cands: [], lead: [], contrib: [], final: null, conflict: null, asks: [], path: [], nodes: [], stage: 1, stageLabel: '', notHypo: false, stageCore: false };
+  if (d.k !== null && d.k >= 3.5) res.notHypo = true;
+
+  if (d.k !== null && d.k < 3.5) {
+    for (const c of C) {
+      const r = c.ev(s, d);
+      if (r) res.cands.push({ id: c.id, name: typeof c.n === 'function' ? c.n(s) : c.n, status: r[0], why: r[1], next: c.next, tx: c.tx });
+    }
+    // hypomagnesemia: primary renal cause only when nothing else explains renal wasting
+    if (d.mgLow) {
+      const other = res.cands.some(c => c.status === 'likely');
+      const c0 = C.find(c => c.id === 'hypoMg');
+      const st = (d.route === 'renal' && !other) ? 'likely' : 'contrib';
+      res.cands.push({ id: 'hypoMg', name: c0.n, status: st, why: [`Mg ${d.mg} mg/dL <1.7`].concat(d.route === 'renal' ? ['腎失鉀'] : []), next: c0.next, tx: c0.tx });
+    }
+    // evidence → single confirmed primary cause
+    if (s.evidence) {
+      const def = C.find(c => c.id === s.evidence);
+      let c = res.cands.find(x => x.id === s.evidence);
+      if (c && c.status === 'unlikely') res.conflict = `確認證據「${c.name}」與目前資料矛盾（${c.why[c.why.length - 1]}），請重新核對資料或證據。`;
+      else if (def) {
+        if (!c) { c = { id: def.id, name: typeof def.n === 'function' ? def.n(s) : def.n, status: 'confirmed', why: [], next: def.next, tx: def.tx }; res.cands.push(c); }
+        c.status = 'confirmed'; c.why = c.why.concat('已取得確認證據：' + def.ev_l);
+        res.final = c;
+        if (!res.cands.some(x => x !== c && x.status === 'likely')) { /* consistent */ }
+      }
+    }
+    res.cands.sort((a, b) => STATUS_RANK[b.status] - STATUS_RANK[a.status]);
+    res.lead = res.cands.filter(c => c.status !== 'contrib' && c.status !== 'unlikely');
+    res.contrib = res.cands.filter(c => c.status === 'contrib' || (res.final && c.id === 'hypoMg' && c !== res.final && d.mgLow));
+  }
+
+  // stage
+  const safetyDone = !!(s.ecg && s.sym && d.mg !== null && (d.egfr !== null || s.oliguria) && s.po && s.riskDone);
+  if (d.k === null) { res.stage = 1; res.stageLabel = '等待血清鉀'; }
+  else if (res.notHypo) { res.stage = 8; res.stageLabel = '未達低血鉀'; }
+  else if (!safetyDone) { res.stage = 2; res.stageLabel = '補齊安全資料'; }
+  else if (!s.histDone) { res.stage = 3; res.stageLabel = '病史與用藥回顧'; }
+  else if (d.route === null || d.route === 'grey') { res.stage = 4; res.stageLabel = '尿鉀定位'; }
+  else if (d.ab === null || !s.bp) { res.stage = 5; res.stageLabel = '酸鹼與血壓'; }
+  else if (res.final) { res.stage = 8; res.stageLabel = '主要病因已確立'; }
+  else if (res.lead.length && res.lead[0].status === 'likely') { res.stage = 7; res.stageLabel = '取得確認證據'; }
+  else { res.stage = 6; res.stageLabel = '病因細分'; }
+  res.stageCore = d.route !== null && d.route !== 'grey' && d.ab !== null;
+  if (res.final && res.stage < 8 && res.stage >= 4) { /* final reached early from strong evidence */ }
+
+  res.asks = buildAsks(s, d, res);
+  res.tx = treatment(s, d, u, res);
+
+  // path + algorithm nodes
+  const P = res.path, N = res.nodes;
+  if (d.k !== null) {
+    N.push('k');
+    P.push({ s: 'done', t: `確認：K ${d.k} mEq/L，${band(d.k)}`, n: s.pseudo ? '疑假性低血鉀，需重測' : '' });
+    if (s.pseudo) N.push('pseudo');
+  } else P.push({ s: 'now', t: '確認：輸入血清鉀' });
+  if (d.k !== null && !res.notHypo) {
+    N.push('safety');
+    P.push({ s: safetyDone ? 'done' : 'now', t: `緊急度：${u.label}${u.provisional ? '（暫定）' : ''}`, n: u.reasons.join('、') || (u.missing.length ? '尚缺：' + u.missing.join('、') : '') });
+    const clues = Object.keys(F).filter(f => F[f].L === 3 && f !== 'histDone' && s[f]).map(f => F[f].l.split('（')[0].split('、')[0]);
+    P.push({ s: s.histDone ? 'done' : (safetyDone ? 'now' : 'todo'), t: '病史與用藥：' + (s.histDone ? '已回顧' : '尚未完成'), n: clues.length ? '線索：' + clues.join('；') : '' });
+    if (s.h_shiftdrug || s.sym === 'paralysis' || s.h_paralysis) N.push('shift');
+    const rt = d.route === 'renal' ? `腎失鉀（${d.ukcr !== null ? 'UK/UCr ' + d.ukcr + ' mEq/g' : '24 h ' + d.uk24 + ' mEq'}）` : d.route === 'extra' ? `非腎性／轉移（${d.ukcr !== null ? 'UK/UCr ' + d.ukcr + ' mEq/g' : '24 h ' + d.uk24 + ' mEq'}）` : d.route === 'grey' ? '24 h 尿鉀灰色地帶' : '尚缺尿鉀';
+    P.push({ s: d.route && d.route !== 'grey' ? 'done' : (res.stage === 4 ? 'now' : 'todo'), t: '尿鉀定位：' + rt, n: d.spotUnreliable ? 'UNa <30：spot 尿鉀可能失真' : (d.route === 'extra' ? '注意：利尿劑藥效消退或嘔吐停止後尿鉀也會低' : '') });
+    if (d.route) N.push('route');
+    if (d.route === 'renal' || d.route === 'extra') N.push(d.route);
+    const abT = d.ab === null ? '尚缺 HCO₃⁻' : ({ acid: '代謝性酸中毒', alk: '代謝性鹼中毒', normal: '酸鹼正常' }[d.ab] + `（HCO₃⁻ ${d.hco3}${d.ag !== null ? '，AG ' + d.ag : ''}）`);
+    const bpT = s.bp === 'high' ? '高血壓' : s.bp === 'low' ? '血壓正常或偏低' : '尚缺血壓';
+    P.push({ s: d.ab !== null && s.bp ? 'done' : (res.stage === 5 ? 'now' : 'todo'), t: `酸鹼與血壓：${abT}；${bpT}` });
+    if (d.route && d.route !== 'grey' && d.ab) {
+      if (d.route === 'extra') N.push('extra-' + d.ab);
+      else {
+        N.push('renal-' + d.ab);
+        if (d.ab === 'acid' && d.agHigh !== null) N.push(d.agHigh ? 'renal-acid-ag' : 'renal-acid-nag');
+        if (d.ab === 'alk' && s.bp) {
+          N.push(s.bp === 'high' ? 'alk-high' : 'alk-low');
+          if (s.bp === 'low' && d.uclLow !== null) N.push(d.uclLow ? 'ucl-low' : 'ucl-high');
+          if (s.bp === 'high' && ['lh', 'hh', 'll'].includes(s.raas)) N.push('raas-' + s.raas);
+        }
+      }
+    }
+    const lead = res.final ? res.final : res.lead[0];
+    P.push({ s: res.final ? 'done' : (res.stage >= 6 ? 'now' : 'todo'), t: '病因：' + (res.final ? '已確立 ' + res.final.name : lead ? `${STATUS_LABEL[lead.status]}：${lead.name}` + (res.stageCore ? '' : '（暫定）') : '資料不足'), n: res.conflict || '' });
+  }
+  return res;
+}
+
+function summary(s, r) {
+  const d = r.d, L = [];
+  L.push('【低血鉀評估摘要】' + new Date().toLocaleString('zh-TW', { hour12: false }));
+  if (d.k === null) { L.push('尚未輸入血清鉀'); return L.join('\n'); }
+  L.push(`K ${d.k} mEq/L（${band(d.k)}）；緊急度：${r.u.label}${r.u.provisional ? '（暫定）' : ''}${r.u.reasons.length ? '：' + r.u.reasons.join('、') : ''}`);
+  const labs = [];
+  if (d.mg !== null) labs.push('Mg ' + d.mg); if (d.egfr !== null) labs.push('eGFR ' + d.egfr);
+  if (d.hco3 !== null) labs.push('HCO3 ' + d.hco3); if (d.ag !== null) labs.push('AG ' + d.ag);
+  if (d.ukcr !== null) labs.push('UK/UCr ' + d.ukcr + ' mEq/g'); if (d.uk24 !== null) labs.push('24h UK ' + d.uk24);
+  if (d.ucl !== null) labs.push('UCl ' + d.ucl); if (d.upH !== null) labs.push('UpH ' + d.upH);
+  if (s.ecg) labs.push('ECG：' + F.ecg.o.find(o => o[0] === s.ecg)[1]);
+  if (s.bp) labs.push('BP：' + F.bp.o.find(o => o[0] === s.bp)[1]);
+  if (s.raas) labs.push('RAAS：' + F.raas.o.find(o => o[0] === s.raas)[1]);
+  if (labs.length) L.push('資料：' + labs.join('；'));
+  L.push('路徑：' + r.path.map(p => p.t).join(' → '));
+  if (r.final) L.push('主要病因（已確立）：' + r.final.name);
+  else if (r.lead.length) L.push('鑑別：' + r.lead.slice(0, 4).map(c => `${c.name}（${STATUS_LABEL[c.status]}）`).join('；'));
+  if (r.contrib.length) L.push('合併因素：' + r.contrib.map(c => c.name).join('；'));
+  if (r.tx) {
+    L.push(`治療：途徑 ${r.tx.route}；目標 ${r.tx.target}`);
+    r.tx.orders.forEach(o => L.push('・' + o));
+  }
+  const need = r.asks.filter(a => a.pri !== 'later').map(a => a.t);
+  if (need.length) L.push('待補：' + need.join('、'));
+  return L.join('\n');
+}
+
+const api = { F, LAYERS, C, STATUS_LABEL, STATUS_RANK, derive, urgency, evaluate, treatment, summary, band, filled };
+if (typeof module !== 'undefined') module.exports = api;
+return api;
+})();
+/*ENGINE-END*/
+
+/* ===================== UI ===================== */
+const $ = id => document.getElementById(id);
+const esc = x => String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const LS = 'hypokalemia-case-v2';
+const blank = () => ({ _pending: [], _log: [] });
+let S = (() => { try { const x = JSON.parse(localStorage.getItem(LS)); if (x && typeof x === 'object') { x._pending = x._pending || []; x._log = x._log || []; return x; } } catch (e) {} return blank(); })();
+const save = () => { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {} };
+let R = null;
+
+function fieldHTML(id, ctx) {
+  const f = HK.F[id], v = S[id];
+  const dataAttr = `data-f="${id}"`;
+  if (f.t === 'chk') return `<label class="check${f.confirm ? ' confirm' : ''}"><input type="checkbox" ${dataAttr} ${v ? 'checked' : ''}><span>${esc(f.l)}</span></label>`;
+  const hint = f.h ? `<span class="hint">${esc(f.h)}</span>` : '';
+  if (f.t === 'num') return `<label class="field"><span class="flabel">${esc(f.l)}</span><span class="inl"><input type="number" inputmode="decimal" step="${f.step || 'any'}" ${dataAttr} value="${v === undefined || v === null ? '' : esc(v)}">${f.u ? `<span class="u">${esc(f.u)}</span>` : ''}</span>${hint}</label>`;
+  const opts = `<option value="">未輸入</option>` + f.o.map(o => `<option value="${o[0]}" ${v === o[0] ? 'selected' : ''}>${esc(o[1])}</option>`).join('');
+  return `<label class="field ${ctx === 'ask' ? 'wide' : ''}"><span class="flabel">${esc(f.l)}</span><select ${dataAttr}>${opts}</select>${hint}</label>`;
+}
+
+function renderSheet() {
+  $('sheet').innerHTML = HK.LAYERS.map(L => {
+    const ids = Object.keys(HK.F).filter(f => HK.F[f].L === L.n);
+    const nums = ids.filter(f => HK.F[f].t !== 'chk'), chks = ids.filter(f => HK.F[f].t === 'chk');
+    return `<details class="layer" data-layer="${L.n}"><summary><span class="n">${L.n}</span><span class="t">${L.t} <span class="small muted" style="font-weight:400">${L.d}</span></span><span class="lstat pill mute"></span></summary><div class="lb">
+      ${nums.length ? `<div class="grid2">${nums.map(f => fieldHTML(f, 'sheet')).join('')}</div>` : ''}
+      ${chks.length ? `<div>${chks.map(f => fieldHTML(f, 'sheet')).join('')}</div>` : ''}
+    </div></details>`;
+  }).join('');
+}
+
+function syncSheet() {
+  document.querySelectorAll('#sheet [data-f]').forEach(el => {
+    if (el === document.activeElement) return;
+    const v = S[el.dataset.f];
+    if (el.type === 'checkbox') el.checked = !!v; else el.value = v === undefined || v === null ? '' : v;
+  });
+  const askLayers = new Set(R.asks.filter(a => a.pri !== 'later').flatMap(a => a.f.map(f => HK.F[f].L)));
+  document.querySelectorAll('#sheet details.layer').forEach(dt => {
+    const n = +dt.dataset.layer;
+    const ids = Object.keys(HK.F).filter(f => HK.F[f].L === n && !HK.F[f].confirm);
+    const c = ids.filter(f => HK.filled(S, f)).length;
+    const st = dt.querySelector('.lstat');
+    st.textContent = askLayers.has(n) ? `待補 · ${c} 項已填` : (c ? `${c} 項已填` : '未填');
+    st.className = 'lstat pill ' + (askLayers.has(n) ? 'warn' : c ? 'go' : 'mute');
+  });
+}
+
+function renderStatus() {
+  const d = R.d, u = R.u;
+  const pct = Math.round((R.stage - 1) / 7 * 100);
+  $('status').innerHTML = `
+    <div class="kbox">${d.k === null ? '—' : d.k}<small>mEq/L K⁺</small></div>
+    <span class="lvl ${u.lvl}">${esc(u.label)}${u.provisional && d.k !== null && d.k < 3.5 ? '（暫定）' : ''}</span>
+    <div class="grow"><div class="small"><b>第 ${R.stage}/8 步</b>　${esc(R.stageLabel)}</div><div class="prog"><i style="width:${pct}%"></i></div></div>
+    <div class="acts noprint" style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" type="button" id="copyBtn">複製摘要</button><button class="btn sm" type="button" id="resetBtn">新病人／清除</button></div>`;
+}
+
+function askHTML(a) {
+  const chks = a.f.filter(f => HK.F[f].t === 'chk'), other = a.f.filter(f => HK.F[f].t !== 'chk');
+  return `<div class="ask ${a.pri}" data-ask="${a.key}">
+    <div class="ah"><h4>${esc(a.t)}</h4><span class="pill ${a.pri === 'now' ? 'stop' : a.pri === 'next' ? 'ev' : 'mute'}">${a.pri === 'now' ? '安全優先' : a.pri === 'next' ? '鑑別下一層' : '補充'}</span></div>
+    <div class="why">${esc(a.why)}</div>
+    ${other.length ? `<div class="fields">${other.map(f => fieldHTML(f, 'ask')).join('')}</div>` : ''}
+    ${chks.length ? `<div class="checks">${chks.map(f => fieldHTML(f, 'ask')).join('')}</div>` : ''}
+    ${a.lab ? `<div class="acts"><button class="btn sm" type="button" data-pend="${a.key}">已送檢，待回報</button></div>` : ''}
+  </div>`;
+}
+
+function renderAsks() {
+  const pend = S._pending || [];
+  const active = R.asks.filter(a => !pend.includes(a.key));
+  const pending = R.asks.filter(a => pend.includes(a.key));
+  // prune pending keys that no longer correspond to an open ask
+  S._pending = pend.filter(k => R.asks.some(a => a.key === k));
+  const main = active.filter(a => a.pri !== 'later'), later = active.filter(a => a.pri === 'later');
+  const shown = main.slice(0, 5), rest = main.slice(5).concat(later);
+  $('askCount').textContent = main.length ? `${main.length} 項` : '';
+  if (R.d.k !== null && R.d.k >= 3.5) $('asks').innerHTML = `<div class="alert go"><strong>K ${R.d.k}：未達低血鉀</strong><span>若臨床仍懷疑（例如 DKA 治療中、正在用胰島素），請重測電解質並追蹤趨勢。</span></div>`;
+  else if (!shown.length && !pending.length) $('asks').innerHTML = R.final ? `<div class="alert go"><strong>資料已足夠，主要病因已確立</strong><span>請依治療計畫執行並追蹤 K、Mg。</span></div>` : `<div class="alert info"><strong>目前沒有阻擋下一步的必要資料</strong><span>請看「病因鑑別」各候選的建議檢查，或在完整資料表補充。</span></div>`;
+  else if (!shown.length) $('asks').innerHTML = `<div class="alert info"><strong>目前必要項目都已送檢</strong><span>結果回報前，請依暫定判斷與治療計畫處理；下方列出待回報項目。</span></div>`;
+  else $('asks').innerHTML = shown.map(askHTML).join('');
+  $('laterBox').innerHTML = rest.length ? `<details class="more" style="margin-top:10px"><summary>其他可補充的資料（${rest.length}）</summary><div class="asklist" style="margin-top:8px">${rest.map(askHTML).join('')}</div></details>` : '';
+  $('pendCard').hidden = !pending.length;
+  $('pending').innerHTML = pending.map(a => `<div class="pend"><span>${esc(a.t)}</span><span style="display:flex;gap:6px"><button class="btn sm" type="button" data-fill="${a.key}">回報了，填寫</button></span></div>`).join('');
+}
+
+function renderUrgent() {
+  const u = R.u, T = R.tx, d = R.d;
+  if (d.k === null) { $('urgent').innerHTML = '<p class="muted small">輸入血清鉀後顯示。</p>'; return; }
+  if (R.notHypo) { $('urgent').innerHTML = '<p class="muted small">K ≥3.5，不需補鉀。</p>'; return; }
+  const cls = u.lvl === 'emergent' ? 'stop' : u.lvl === 'urgent' ? 'warn' : 'go';
+  let h = `<div class="alert ${cls}"><strong>${esc(u.label)}${u.provisional ? '（暫定：尚缺 ' + esc(u.missing.join('、')) + '）' : ''}</strong><span>${esc(u.reasons.join('、') || '沒有緊急徵象')}</span></div>`;
+  h += `<div class="bdr"><div class="m"><div class="k">建議途徑</div><div class="v" style="font-size:16px">${esc(T.route)}</div></div><div class="m"><div class="k">目標</div><div class="v" style="font-size:14px;font-family:var(--f-body)">${esc(T.target)}</div></div>${T.deficit ? `<div class="m"><div class="k">估計缺鉀</div><div class="v">${T.deficit.lo}–${T.deficit.hi}<span class="u"> mEq</span></div></div>` : ''}</div>`;
+  const first = T.now.concat(T.special.slice(0, 1), T.k.slice(0, 2));
+  if (d.mgLow) first.push(T.mg[0]);
+  h += `<ul class="plain">${first.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
+  h += `<p class="small" style="margin-top:8px"><a href="#" data-goto="tx" style="color:var(--accent)">完整補鉀治療計畫與範例醫囑 →</a></p>`;
+  $('urgent').innerHTML = h;
+}
+
+function renderDdx() {
+  const d = R.d;
+  $('dxTag').textContent = R.final ? '已確立' : R.stageCore ? '依資料' : (d.k !== null && d.k < 3.5 ? '暫定（尚缺尿鉀或酸鹼）' : '');
+  if (d.k === null || R.notHypo) { $('ddx').innerHTML = '<p class="muted small">確認低血鉀後顯示。</p>'; return; }
+  let h = '';
+  if (R.conflict) h += `<div class="alert warn" style="margin-bottom:8px"><strong>證據矛盾</strong><span>${esc(R.conflict)}</span></div>`;
+  if (R.final) h += `<div class="final" style="margin-bottom:8px"><div class="small muted">主要病因（唯一）</div><b>${esc(R.final.name)}</b></div>`;
+  const shown = R.cands.filter(c => c !== R.final);
+  if (!R.cands.length) h += `<p class="muted small">目前資料還不足以排序病因。${R.stageCore ? '' : '最關鍵的是「尿鉀定位」與「酸鹼狀態」，請先補這兩項。'}</p>`;
+  h += '<div class="dxlist">' + shown.map(c => `<div class="dx ${c.status}"><div class="dh"><b>${esc(c.name)}</b><span class="pill ${c.status === 'likely' ? 'ev' : c.status === 'possible' ? 'warn' : c.status === 'contrib' ? 'mute' : 'mute'}">${HK.STATUS_LABEL[c.status]}</span></div>${c.why.length ? `<ul>${c.why.map(w => `<li>${esc(w)}</li>`).join('')}</ul>` : ''}${c.status !== 'unlikely' && c.status !== 'contrib' ? `<div class="nx">下一步：${esc(c.next)}</div>` : ''}</div>`).join('') + '</div>';
+  if (!R.stageCore && R.cands.length) h += '<p class="note" style="margin-top:8px">目前是依病史與部分資料的暫定排序；補上尿鉀與 HCO₃⁻ 後才進入正式分支。</p>';
+  $('ddx').innerHTML = h;
+}
+
+function renderPath() {
+  $('path').innerHTML = R.path.map((p, i) => `<li class="${p.s}"><i>${p.s === 'done' ? '✓' : i + 1}</i><div>${esc(p.t)}${p.n ? `<div class="pl">${esc(p.n)}</div>` : ''}</div></li>`).join('');
+}
+
+function renderTx() {
+  const T = R.tx, d = R.d;
+  if (!T) { $('txPlan').innerHTML = `<h3>補鉀治療計畫</h3><p class="muted">${d.k === null ? '請先在「引導評估」輸入血清鉀。' : 'K ≥3.5，不需補鉀。'}</p>`; return; }
+  const list = a => a.length ? `<ul class="plain">${a.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '';
+  let h = `<h3>補鉀治療計畫 <span class="lvl ${R.u.lvl}" style="font-size:12px">${esc(R.u.label)}${R.u.provisional ? '（暫定）' : ''}</span></h3>`;
+  h += `<div class="bdr"><div class="m"><div class="k">血清鉀</div><div class="v">${d.k}</div></div><div class="m"><div class="k">途徑</div><div class="v" style="font-size:16px">${esc(T.route)}</div></div>${T.deficit ? `<div class="m"><div class="k">估計缺鉀（粗估）</div><div class="v">${T.deficit.lo}–${T.deficit.hi}<span class="u"> mEq</span></div></div>` : `<div class="m"><div class="k">估計缺鉀</div><div class="v" style="font-size:13px;font-family:var(--f-body)">${T.shiftDom ? '轉移型：不適用' : 'DKA：不適用'}</div></div>`}</div>`;
+  h += `<p class="small muted" style="margin-top:6px">目標：${esc(T.target)}</p>`;
+  if (T.now.length) h += `<h4>立即處置</h4>${list(T.now)}`;
+  if (T.special.length) h += `<h4>特殊情境</h4>${list(T.special)}`;
+  h += `<h4>補鉀</h4>${list(T.k)}`;
+  if (T.deficit) h += `<p class="note">缺鉀估算：慢性低血鉀每降 1 mEq/L 約缺 200–400 mEq（K 2.0 約缺 400–800 mEq）。這只是粗估，前提是鉀在細胞內外分布正常；持續流失需另外加。</p>`;
+  h += `<h4>鉀鹽選擇</h4>${list(T.prep)}`;
+  h += `<h4>鎂</h4>${list(T.mg)}`;
+  if (T.orders.length) h += `<h4>範例醫囑 <span class="sample">示例</span></h4>${T.orders.map(o => `<div class="order">${esc(o)}</div>`).join('')}<p class="small muted" style="margin-top:6px">依院內稀釋規範、輸液限制與即時 K 值調整。</p>`;
+  h += `<h4>病因治療${R.final ? '' : '（依目前最可能的病因，暫定）'}</h4>`;
+  h += T.cause.length ? T.cause.map(c => `<div class="opt" style="padding:6px 0 6px 12px;border-left:3px solid ${c.tentative ? 'var(--line)' : 'var(--go)'};margin-top:6px;font-size:13.8px"><b>${esc(c.name)}</b><br>${esc(c.tx)}</div>`).join('') : '<p class="muted small">病因尚未明確，請先依「引導評估」補資料。</p>';
+  h += `<h4>後續</h4>${list(T.follow)}`;
+  $('txPlan').innerHTML = h;
+}
+
+function renderAlgo() {
+  const on = new Set(R.nodes);
+  document.querySelectorAll('.tree .nd').forEach(n => n.classList.toggle('on', on.has(n.dataset.n)));
+}
+
+function renderLog() {
+  const L = (S._log || []).slice(-40).reverse();
+  $('log').innerHTML = L.length ? L.map(e => `<div><span class="mono">${new Date(e.t).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })}</span><span>${esc(e.m)}</span></div>`).join('') : '<p class="muted small">每次補資料都會留下時間紀錄，方便交班與寫病歷。</p>';
+}
+
+function renderAll() {
+  R = HK.evaluate(S);
+  renderStatus(); renderAsks(); renderUrgent(); renderDdx(); renderPath(); renderTx(); renderAlgo(); renderLog(); syncSheet();
+  save();
+}
+
+function display(id, v) {
+  const f = HK.F[id];
+  if (f.t === 'chk') return v ? '是' : '否';
+  if (f.t === 'sel') { const o = f.o.find(x => x[0] === v); return o ? o[1] : '清除'; }
+  return v === '' ? '清除' : v + (f.u ? ' ' + f.u : '');
+}
+
+function setField(id, el) {
+  const f = HK.F[id];
+  let v;
+  if (f.t === 'chk') v = el.checked;
+  else if (f.t === 'num') v = el.value === '' ? '' : Number(el.value);
+  else v = el.value;
+  if (S[id] === v || (S[id] === undefined && (v === '' || v === false))) return;
+  S[id] = v;
+  S._log.push({ t: Date.now(), m: `${f.l.split('（')[0]}：${display(id, v)}` });
+  if (S._log.length > 300) S._log = S._log.slice(-300);
+  renderAll();
+}
+
+document.addEventListener('change', e => {
+  const el = e.target.closest('[data-f]');
+  if (el) setField(el.dataset.f, el);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.matches('input[type=number][data-f]')) { e.preventDefault(); e.target.blur(); }
+});
+document.addEventListener('click', e => {
+  const p = e.target.closest('[data-pend]');
+  if (p) { const k = p.dataset.pend; if (!S._pending.includes(k)) S._pending.push(k); const a = R.asks.find(x => x.key === k); S._log.push({ t: Date.now(), m: `已送檢：${a ? a.t : k}` }); renderAll(); toast('已標記待回報，先處理下一項'); return; }
+  const fl = e.target.closest('[data-fill]');
+  if (fl) { S._pending = S._pending.filter(k => k !== fl.dataset.fill); renderAll(); const el = document.querySelector(`[data-ask="${fl.dataset.fill}"] [data-f]`); if (el) { el.closest('.ask').scrollIntoView({ block: 'center', behavior: 'smooth' }); el.focus(); el.closest('.ask').classList.add('flash'); } return; }
+  const g = e.target.closest('[data-goto]');
+  if (g) { e.preventDefault(); showTab(g.dataset.goto); return; }
+  if (e.target.id === 'copyBtn') { copyText(HK.summary(S, R)); return; }
+  if (e.target.id === 'resetBtn') { if (confirm('清除目前所有輸入，開始新病人？')) { S = blank(); renderAll(); showTab('ws'); toast('已清除'); } return; }
+  if (e.target.id === 'expandAll') { const all = [...document.querySelectorAll('#sheet details')]; const open = all.some(x => !x.open); all.forEach(x => x.open = open); e.target.textContent = open ? '全部收合' : '全部展開'; return; }
+  const c = e.target.closest('[data-case]');
+  if (c) { loadCase(+c.dataset.case); return; }
+});
+
+function copyText(t) {
+  const done = () => toast('摘要已複製，可貼到病歷');
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(done, () => fallback());
+  else fallback();
+  function fallback() { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (e) { toast('無法複製'); } ta.remove(); }
+}
+let tt; function toast(m) { const el = $('toast'); el.textContent = m; el.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => el.classList.remove('show'), 1800); }
+
+/* tabs */
+const TABS = ['ws', 'tx', 'algo', 'cases', 'ref'];
+function showTab(t) {
+  TABS.forEach(x => { $(x).hidden = x !== t; $('tab-' + x).setAttribute('aria-selected', x === t); $('tab-' + x).tabIndex = x === t ? 0 : -1; });
+  try { localStorage.setItem(LS + '-tab', t); } catch (e) {}
+  window.scrollTo({ top: 0 });
+}
+document.querySelector('.tabs').addEventListener('click', e => { const b = e.target.closest('.tab'); if (b) showTab(b.dataset.t); });
+document.querySelector('.tabs').addEventListener('keydown', e => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  const i = TABS.indexOf(document.querySelector('.tab[aria-selected="true"]').dataset.t);
+  const n = TABS[(i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length]; showTab(n); $('tab-' + n).focus();
+});
+
+/* example cases */
+const H = { riskDone: true, histDone: true };
+const CASES = [
+  { t: '初次接觸：只有 K 值', d: '急診抽血 K 2.4，病人說四肢無力。其他資料都還沒有。看系統如何一步步引導。', s: { k: 2.4, sym: 'weak' } },
+  { t: '持續嘔吐', d: '幽門阻塞反覆嘔吐，鹼中毒、低尿氯，UK/UCr 因重碳酸尿偏高。', s: { k: 2.7, sym: 'mild', ecg: 'changes', egfr: 75, po: 'no', access: 'periph', mg: 1.9, ...H, h_vomit: true, uk: 45, ucr: 90, una: 60, hco3: 36, na: 138, cl: 88, bp: 'low', ucl: 8, upH: 7.5 } },
+  { t: '慢性腹瀉', d: '數週水瀉，高氯性代謝性酸中毒，尿鉀低，合併低鎂。', s: { k: 2.9, sym: 'mild', ecg: 'normal', egfr: 60, po: 'yes', mg: 1.5, ...H, h_diarrhea: true, uk: 12, ucr: 150, hco3: 15, na: 136, cl: 113, bp: 'low' } },
+  { t: '年輕女性、抽筋、低鎂', d: '血壓偏低，腎失鉀＋鹼中毒，尿氯高、低尿鈣，否認用藥。', s: { k: 2.8, sym: 'mild', ecg: 'normal', egfr: 95, po: 'yes', mg: 1.3, ...H, uk: 40, ucr: 80, una: 120, hco3: 31, bp: 'low', ucl: 130, uca: 'low', diurscreen: 'neg' } },
+  { t: '頑固型高血壓', d: '三種降壓藥仍控制不佳，腎失鉀＋鹼中毒，腎素抑制、醛固酮高。', s: { k: 2.6, sym: 'weak', ecg: 'changes', egfr: 70, po: 'yes', mg: 2.0, ...H, cardiac: true, uk: 50, ucr: 100, hco3: 31, bp: 'high', raas: 'lh', evidence: 'pa' } },
+  { t: '飽餐後清晨四肢癱瘓', d: '年輕男性，心悸、體重下降。UK/UCr 很低、酸鹼正常、TSH 抑制。', s: { k: 1.9, sym: 'paralysis', ecg: 'changes', egfr: 100, po: 'yes', mg: 2.1, ...H, h_paralysis: true, h_thyro: true, uk: 5, ucr: 70, hco3: 24, bp: 'low', tsh: 'low' } },
+  { t: '乾眼、口乾、腎結石', d: 'AG 正常的代謝性酸中毒合併腎失鉀，尿 pH 6.8，UAG 正值。', s: { k: 2.5, sym: 'weak', ecg: 'normal', egfr: 80, po: 'yes', mg: 1.9, ...H, uk: 30, ucr: 60, una: 50, ucl: 60, hco3: 14, na: 138, cl: 114, bp: 'low', upH: 6.8 } },
+  { t: 'DKA 合併低血鉀', d: '新診斷第一型糖尿病，DKA 到院 K 3.1，準備開始胰島素滴注。', s: { k: 3.1, sym: 'mild', ecg: 'normal', egfr: 55, po: 'no', access: 'central', mg: 1.6, phos: 2.1, ...H, dka: true, histDone: false } }
+];
+function renderCases() {
+  $('caseList').innerHTML = CASES.map((c, i) => `<div class="card case"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><h3 style="font-size:15.5px">${esc(c.t)}</h3><span class="sample">示例</span></div><p class="small muted">${esc(c.d)}</p><div><button class="btn primary sm" type="button" data-case="${i}">載入此病例</button></div></div>`).join('');
+}
+function loadCase(i) {
+  const c = CASES[i];
+  S = Object.assign(blank(), JSON.parse(JSON.stringify(c.s)));
+  S._log.push({ t: Date.now(), m: `載入示例：${c.t}` });
+  renderAll(); showTab('ws'); toast('已載入示例：' + c.t);
+}
+
+renderSheet(); renderCases(); renderAll();
+(() => { let t = 'ws'; try { t = localStorage.getItem(LS + '-tab') || 'ws'; } catch (e) {} showTab(TABS.includes(t) ? t : 'ws'); })();
+document.querySelectorAll('#sheet details.layer').forEach((dt, i) => { if (i < 2) dt.open = true; });
+</script>
+</body>
+</html>
