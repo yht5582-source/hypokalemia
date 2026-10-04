@@ -1182,9 +1182,31 @@ function renderLog() {
 }
 
 function renderAll() {
+  const f = focusMark();
   R = HK.evaluate(S);
   renderStatus(); renderAsks(); renderUrgent(); renderDdx(); renderPath(); renderTx(); renderAlgo(); renderLog(); syncSheet();
   save();
+  focusRestore(f);
+}
+
+/* keep keyboard flow across re-renders: same control if it still exists, otherwise the card now in that slot */
+function focusMark() {
+  const ae = document.activeElement;
+  if (!ae || ae === document.body || !ae.closest) return null;
+  const card = ae.closest('#asks .ask');
+  const sel = ae.dataset.f ? `[data-f="${ae.dataset.f}"]` : ae.dataset.pend ? `[data-pend="${ae.dataset.pend}"]` : null;
+  return { sel, zone: card ? '#asks' : ae.closest('#sheet') ? '#sheet' : null, key: card && card.dataset.ask, idx: card ? [...document.querySelectorAll('#asks .ask')].indexOf(card) : -1 };
+}
+function focusRestore(m) {
+  if (!m) return;
+  const el = m.sel && m.zone && document.querySelector(`${m.zone} ${m.sel}`);
+  if (el) { if (el !== document.activeElement) el.focus({ preventScroll: true }); return; }
+  if (m.zone !== '#asks') return;
+  const cards = [...document.querySelectorAll('#asks .ask')];
+  if (!cards.length) return;
+  const c = cards.find(x => x.dataset.ask === m.key) || cards[Math.min(Math.max(m.idx, 0), cards.length - 1)];
+  const f = c.querySelector('[data-f]');
+  if (f) f.focus({ preventScroll: true });
 }
 
 function display(id, v) {
@@ -1204,7 +1226,7 @@ function setField(id, el) {
   S[id] = v;
   S._log.push({ t: Date.now(), m: `${f.l.split('（')[0]}：${display(id, v)}` });
   if (S._log.length > 300) S._log = S._log.slice(-300);
-  renderAll();
+  setTimeout(renderAll, 0); // let focus land on the next field first
 }
 
 document.addEventListener('change', e => {
