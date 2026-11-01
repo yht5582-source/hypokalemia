@@ -141,6 +141,9 @@ t('shift/TPP → low dose, rebound warning, no deficit, propranolol', () => {
   assert.ok(tx.shiftDom); assert.equal(tx.deficit, null); assert.ok(tx.k.some(x => /反彈/.test(x))); assert.ok(tx.k.some(x => /propranolol/.test(x)));
 });
 t('DKA: start 10 mmol/h (2024 consensus), escalate to 20–30 mEq/h (UpToDate)', () => assert.ok(ev({ k: 3.1, ...SAFE, dka: true }).tx.special.some(x => /10 mmol\/h/.test(x) && /20–30 mEq\/h/.test(x))));
+t('DKA: Figure 4 rate keeps the unit printed in the figure', () => {
+  assert.ok(ev({ k: 3.1, ...SAFE, dka: true }).tx.special.some(x => /Figure 4 為 10–20 mmol\/L\/h/.test(x)));
+});
 t('DKA with K 3.1 is at least urgent', () => assert.equal(ev({ k: 3.1, ...SAFE, dka: true }).u.lvl, 'urgent'));
 t('DKA: hold insulin while K <3.5',() => assert.ok(ev({ k: 3.1, ...SAFE, dka: true }).tx.special.some(x => /暫緩胰島素/.test(x) && /3\.5/.test(x))));
 t('acidosis → potassium citrate/bicarbonate; correct K before alkali', () => {
@@ -201,6 +204,7 @@ t('Q6 K 2.5 → deficit 300–600', () => assert.deepEqual(ev({ k: 2.5, ...SAFE,
 t('Q7 NPO peripheral order', () => assert.ok(ev({ k: 2.8, ...SAFE, po: 'no', access: 'periph' }).tx.orders.some(o => /0\.9% NaCl 1000 mL \+ KCl 40 mEq.*250 mL\/h/.test(o))));
 t('Q8 alkalosis → KCl, 40%', () => assert.ok(/KCl.*40%/.test(ev({ k: 2.9, ...SAFE, h_vomit: true, hco3: 34, bp: 'low' }).tx.prep[0])));
 t('Q9 DKA K 3.1 → hold insulin, 10 mmol/h', () => assert.ok(ev({ k: 3.1, ...SAFE, dka: true }).tx.special.some(x => /暫緩胰島素/.test(x) && /10 mmol\/h/.test(x))));
+t('Q9 explanation keeps the Figure 4 unit', () => assert.ok(/Figure 4 寫 10–20 mmol\/L\/h/.test(QUIZ_FLAT[8].x)));
 t('Q10 TPP → low dose, propranolol, no deficit', () => {
   const r = ev({ k: 2.1, ...SAFE, sym: 'paralysis', ukcr: 8, hco3: 24, bp: 'low', tsh: 'low' });
   assert.equal(status(r, 'tpp'), 'likely'); assert.equal(r.tx.deficit, null);

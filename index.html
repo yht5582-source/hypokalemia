@@ -962,7 +962,7 @@ function treatment(s, d, u, res) {
 
   // DKA
   if (s.dka) {
-    T.special.push(`DKA/HHS 且 K ${k} <3.5：先暫緩胰島素，補鉀到 >3.5 再開始（2024 ADA/EASD/JBDS/AACE/DTS 共識；UpToDate 用 >3.3）。起始 KCl 10 mmol/h（2024 共識內文；其 Figure 4 為 10–20 mmol/h）；K 很低或持續下降時可提高到 20–30 mEq/h（UpToDate：0.45% NaCl 每公升加 KCl 40–60 mEq），此時需中心靜脈與連續 ECG。每 1–2 h 測 K。`);
+    T.special.push(`DKA/HHS 且 K ${k} <3.5：先暫緩胰島素，補鉀到 >3.5 再開始（2024 ADA/EASD/JBDS/AACE/DTS 共識；UpToDate 用 >3.3）。起始 KCl 10 mmol/h（2024 共識內文；其 Figure 4 為 10–20 mmol/L/h，原圖單位）；K 很低或持續下降時可提高到 20–30 mEq/h（UpToDate：0.45% NaCl 每公升加 KCl 40–60 mEq），此時需中心靜脈與連續 ECG。每 1–2 h 測 K。`);
   }
 
   // K plan
@@ -1466,7 +1466,7 @@ const QUIZ = [
       x: '鹼中毒常合併缺氯，應首選 KCl。' },
     { q: 'DKA 病人 K 3.1，血糖 480 mg/dL，pH 7.1。依 2024 共識，下列何者最適當？',
       o: ['立即開始胰島素滴注，同時補鉀', '暫緩胰島素，先補 KCl（起始 10 mmol/h），K >3.5 再開始胰島素', '先給 bicarbonate，再開始胰島素', '先給胰島素，K <2.5 才補鉀'], a: 1,
-      x: 'K <3.5 先暫緩胰島素。共識內文寫 10 mmol/h，其 Figure 4 寫 10–20 mmol/h，更快須經中心靜脈。UpToDate 的胰島素門檻為 >3.3，補鉀速率為 20–30 mEq/h。' },
+      x: 'K <3.5 先暫緩胰島素。共識內文寫 10 mmol/h，其 Figure 4 寫 10–20 mmol/L/h（原圖單位），更快須經中心靜脈。UpToDate 的胰島素門檻為 >3.3，補鉀速率為 20–30 mEq/h。' },
     { q: '25 歲男性飽餐後四肢麻痺，K 2.1，UK/UCr 8 mEq/g，HCO₃⁻ 24，TSH 抑制。最適當的處置是？',
       o: ['依缺鉀公式補足 300–400 mEq', 'KCl 40 mEq/h，直到 K ≥4.0', '少量 KCl、密集監測 K，可考慮 propranolol', '不補鉀，僅觀察'], a: 2,
       x: '轉移型體內總鉀不缺，週期性麻痺治療後 40–60% 會反彈成高血鉀；即使 10 mEq/h，TPP 仍有 40% 發生高血鉀。UK/UCr <22 且酸鹼正常支持此診斷。' }
