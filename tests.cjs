@@ -240,5 +240,19 @@ t('Q20 ll pattern + family → Liddle, amiloride', () => {
   assert.ok(/Amiloride/.test(HK.C.find(c => c.id === 'liddle').tx) && /spironolactone 無效/.test(HK.C.find(c => c.id === 'liddle').tx));
 });
 
+console.log('Mind map');
+t('every tab has a pane and is listed in TABS', () => {
+  const tabs = html.match(/const TABS = \[(.*?)\]/)[1].match(/'(\w+)'/g).map(x => x.replace(/'/g, ''));
+  assert.deepEqual(tabs, ['ws', 'tx', 'algo', 'map', 'cases', 'quiz', 'ref']);
+  tabs.forEach(x => { assert.ok(html.includes(`id="tab-${x}"`), x); assert.ok(html.includes(`id="${x}" role="tabpanel"`), x); });
+});
+t('map thresholds match the engine and corrected sources', () => {
+  const sec = html.match(/<!-- 4 mind map -->([\s\S]*?)<!-- 5 cases -->/)[1];
+  ['&lt;13 mEq/g', '&gt;13 mEq/g', '&lt;25 mEq/天', '&gt;30 mEq/天', 'UK/UCr &lt;22', '尿 Na/Cl 約 5', '尿 pH &gt;5.5', '尿氯 &lt;20', '尿氯 ≥20', '1000 mL ≤60 mEq', 'minibag（水）', '200–400 mEq', 'K &lt;3.5 暫緩胰島素'].forEach(x => assert.ok(sec.includes(x), x));
+  assert.ok(!/K ≥3\.0 即停|確認試驗不再/.test(sec));
+  const d = HK.derive({ ukcr: 13.1, uk24: 31 }); assert.equal(d.route, 'renal');
+  assert.equal(HK.derive({ uk24: 24 }).route, 'extra');
+});
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

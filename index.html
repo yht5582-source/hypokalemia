@@ -197,6 +197,37 @@ ol.path li .pl{color:var(--ink-3);font-size:12.5px}
 .qx{font-size:13.8px;border-left:3px solid var(--accent);padding:4px 0 4px 12px}
 .qx b.ok{color:var(--go)} .qx b.no{color:var(--stop)}
 .score{font-family:var(--f-mono);font-size:30px;line-height:1.1}
+.mm{font-size:13px;line-height:1.45}
+.mm ul{list-style:none;margin:0;padding:0 0 0 18px;display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}
+.mm>ul{padding-left:0}
+.mm li{display:flex;align-items:center;position:relative;min-width:0}
+.mm ul ul>li::before{content:"";position:absolute;left:-9px;top:50%;width:9px;border-top:1px solid var(--ink-3)}
+.mm ul ul>li::after{content:"";position:absolute;left:-9px;top:-3px;bottom:-3px;border-left:1px solid var(--ink-3)}
+.mm ul ul>li:first-child::after{top:50%}
+.mm ul ul>li:last-child::after{bottom:50%}
+.mm ul ul>li:only-child::after{display:none}
+.mn{display:block;border:1px solid var(--line);border-radius:7px;padding:5px 9px;background:var(--panel);flex:none;box-sizing:border-box}
+.mn small{display:block;font-size:12px;color:var(--ink-2)}
+.mroot{width:76px;font-weight:700;text-align:center;background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.m1{width:118px;font-weight:700}
+.m2{width:150px;font-weight:700}
+.m3{width:150px}
+.mtx .m2{width:200px}
+.mleaf{flex:1;min-width:0;border-color:var(--line-2)}
+.m1 small,.m2 small,.m3 small{font-weight:400}
+.mstop{background:var(--stop-soft);border-color:var(--stop)} .mstop,.mstop small{color:var(--stop)}
+.mwarn{background:var(--warn-soft);border-color:var(--warn)} .mwarn,.mwarn small{color:var(--warn)}
+.mgo{background:var(--go-soft);border-color:var(--go)} .mgo,.mgo small{color:var(--go)}
+@media (max-width:820px){
+  .mm li{flex-direction:column;align-items:stretch}
+  .mm ul{padding-left:16px;margin-top:5px;flex:none}
+  .mm>ul{margin-top:0}
+  .mn,.m1,.m2,.m3,.mtx .m2,.mroot{width:auto;flex:none;text-align:left}
+  .mm ul ul>li::before{top:16px}
+  .mm ul ul>li:first-child::after{top:-5px}
+  .mm ul ul>li:last-child::after{bottom:auto;height:21px}
+  .mm ul ul>li:only-child::after{display:block;top:-5px;bottom:auto;height:21px}
+}
 .disclaimer{margin-top:22px;font-size:13px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:14px;max-width:90ch}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);font-size:13.5px;padding:8px 16px;border-radius:999px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
 .toast.show{opacity:1}
@@ -222,9 +253,10 @@ ol.path li .pl{color:var(--ink-3);font-size:12.5px}
     <button class="tab" role="tab" id="tab-ws" aria-controls="ws" data-t="ws"><b>1</b>引導評估</button>
     <button class="tab" role="tab" id="tab-tx" aria-controls="tx" data-t="tx"><b>2</b>補鉀治療計畫</button>
     <button class="tab" role="tab" id="tab-algo" aria-controls="algo" data-t="algo"><b>3</b>鑑別流程總覽</button>
-    <button class="tab" role="tab" id="tab-cases" aria-controls="cases" data-t="cases"><b>4</b>示例病例</button>
-    <button class="tab" role="tab" id="tab-quiz" aria-controls="quiz" data-t="quiz"><b>5</b>測驗</button>
-    <button class="tab" role="tab" id="tab-ref" aria-controls="ref" data-t="ref"><b>6</b>參考文獻</button>
+    <button class="tab" role="tab" id="tab-map" aria-controls="map" data-t="map"><b>4</b>心智圖</button>
+    <button class="tab" role="tab" id="tab-cases" aria-controls="cases" data-t="cases"><b>5</b>示例病例</button>
+    <button class="tab" role="tab" id="tab-quiz" aria-controls="quiz" data-t="quiz"><b>6</b>測驗</button>
+    <button class="tab" role="tab" id="tab-ref" aria-controls="ref" data-t="ref"><b>7</b>參考文獻</button>
   </nav>
 
   <div class="status" id="status" aria-live="polite"></div>
@@ -364,18 +396,94 @@ ol.path li .pl{color:var(--ink-3);font-size:12.5px}
     </div>
   </section>
 
-  <!-- 4 cases -->
+  <!-- 4 mind map -->
+  <section class="pane" id="map" role="tabpanel" aria-labelledby="tab-map" hidden>
+    <div class="stack">
+      <div class="card">
+        <h3>診斷心智圖</h3>
+        <div class="mm"><ul><li><span class="mn mroot">低血鉀<small>K &lt;3.5</small></span><ul>
+          <li><span class="mn m1">1 排除假性</span><ul><li><span class="mn mleaf">WBC 極高且檢體延遲<small>快速分離血漿或 4°C 保存後重測</small></span></li></ul></li>
+          <li><span class="mn m1 mstop">2 安全評估</span><ul><li><span class="mn mleaf">症狀與肌力、12 導程 ECG、Mg、腎功能<small>心臟病、digoxin、肝硬化、DKA；能否口服</small></span></li></ul></li>
+          <li><span class="mn m1">3 病史</span><ul><li><span class="mn mleaf">嘔吐、腹瀉、利尿劑<small>胰島素、β2 agonist、週期性麻痺、腎毒性藥物、甘草</small></span></li></ul></li>
+          <li><span class="mn m1">4 尿鉀定位<small>UK/UCr 或 24 h</small></span><ul>
+            <li><span class="mn m2 mgo">非腎性<small>&lt;13 mEq/g；&lt;25 mEq/天</small></span><ul>
+              <li><span class="mn m3">代謝性酸中毒</span><ul><li><span class="mn mleaf">腹瀉、瀉藥、絨毛腺瘤</span></li></ul></li>
+              <li><span class="mn m3">代謝性鹼中毒</span><ul><li><span class="mn mleaf">隱匿催吐（尿 Na/Cl 約 5）<small>或利尿劑藥效已退</small></span></li></ul></li>
+              <li><span class="mn m3">酸鹼正常</span><ul><li><span class="mn mleaf">細胞內轉移、攝取不足<small>週期性麻痺：UK/UCr &lt;22，驗 TSH</small></span></li></ul></li>
+            </ul></li>
+            <li><span class="mn m2 mwarn">腎失鉀<small>&gt;13 mEq/g；&gt;30 mEq/天</small></span><ul>
+              <li><span class="mn m3">酸中毒，AG 高</span><ul><li><span class="mn mleaf">DKA／酮酸、toluene</span></li></ul></li>
+              <li><span class="mn m3">酸中毒，AG 正常</span><ul><li><span class="mn mleaf">遠端 RTA：尿 pH &gt;5.5<small>近端 RTA、Fanconi、acetazolamide</small></span></li></ul></li>
+              <li><span class="mn m3">酸鹼正常</span><ul><li><span class="mn mleaf">低鎂、腎毒性藥物、多尿</span></li></ul></li>
+              <li><span class="mn m3">鹼中毒，血壓不高<small>測尿氯</small></span><ul>
+                <li><span class="mn mleaf">尿氯 &lt;20：嘔吐、胃管<small>活動期尿 pH &gt;7</small></span></li>
+                <li><span class="mn mleaf">尿氯 ≥20：先做利尿劑篩檢<small>低尿鈣、低鎂→Gitelman；尿鈣正常或高→Bartter</small></span></li>
+              </ul></li>
+              <li><span class="mn m3">鹼中毒，高血壓<small>腎素／醛固酮</small></span><ul>
+                <li><span class="mn mleaf">腎素↓ 醛固酮↑：PA</span></li>
+                <li><span class="mn mleaf">腎素↑ 醛固酮↑：腎動脈狹窄<small>惡性高血壓、renin 腫瘤、利尿劑</small></span></li>
+                <li><span class="mn mleaf">腎素↓ 醛固酮↓：Liddle<small>甘草／azole、Cushing、CAH、DOC 腫瘤</small></span></li>
+              </ul></li>
+            </ul></li>
+          </ul></li>
+        </ul></li></ul></div>
+      </div>
+      <div class="card">
+        <h3>治療心智圖</h3>
+        <div class="mm mtx"><ul><li><span class="mn mroot">補鉀<small>治療</small></span><ul>
+          <li><span class="mn m1">1 緊急度</span><ul>
+            <li><span class="mn m2 mstop">緊急<small>K &lt;2.5、心律不整、麻痺、橫紋肌溶解</small></span><ul><li><span class="mn mleaf">IV＋PO，連續 ECG<small>評估呼吸肌；torsades 給 MgSO₄</small></span></li></ul></li>
+            <li><span class="mn m2 mwarn">需積極補充<small>K &lt;3.0、ECG 變化、明顯無力、DKA</small></span><ul><li><span class="mn mleaf">PO 為主；ECG 變化或不能口服加 IV</span></li></ul></li>
+            <li><span class="mn m2 mgo">穩定／輕度<small>K 3.0–3.4，無症狀</small></span><ul><li><span class="mn mleaf">PO KCl 10–20 mEq，每天 2–4 次</span></li></ul></li>
+          </ul></li>
+          <li><span class="mn m1">2 給藥方式</span><ul>
+            <li><span class="mn m2">口服</span><ul><li><span class="mn mleaf">KCl 40 mEq tid–qid<small>併用 IV 時 20 mEq q2–3h</small></span></li></ul></li>
+            <li><span class="mn m2">靜脈速率</span><ul><li><span class="mn mleaf">一般上限 10–20 mEq/h<small>危及生命可達 40 mEq/h，經中心或多條周邊靜脈</small></span></li></ul></li>
+            <li><span class="mn m2">靜脈配製</span><ul><li><span class="mn mleaf">用 saline，不用 dextrose；周邊 20–60 mEq/L<small>袋內 &gt;40 mEq 或 &gt;10 mEq/h 用幫浦</small></span></li></ul></li>
+            <li><span class="mn m2">每袋上限</span><ul><li><span class="mn mleaf">1000 mL ≤60 mEq<small>minibag（水）：周邊 100–200 mL ≤10；中心 100 mL ≤40 mEq</small></span></li></ul></li>
+          </ul></li>
+          <li><span class="mn m1">3 鉀鹽</span><ul>
+            <li><span class="mn m2">KCl</span><ul><li><span class="mn mleaf">多數病人；鹼中毒、缺氯</span></li></ul></li>
+            <li><span class="mn m2">Citrate／bicarbonate</span><ul><li><span class="mn mleaf">代謝性酸中毒；IV 只有 K acetate<small>K 很低時先用 KCl 拉到安全值</small></span></li></ul></li>
+            <li><span class="mn m2">磷酸鉀</span><ul><li><span class="mn mleaf">合併低磷（Fanconi）</span></li></ul></li>
+          </ul></li>
+          <li><span class="mn m1">4 補鎂</span><ul><li><span class="mn mleaf">Mg &lt;1.7：與補鉀同時或優先<small>例 MgSO₄ 2 g IV ≥1 h；腎功能差要減量</small></span></li></ul></li>
+          <li><span class="mn m1">5 特殊情境</span><ul>
+            <li><span class="mn m2">轉移型／週期性麻痺</span><ul><li><span class="mn mleaf">少量補鉀、密集測 K，警惕反彈<small>TPP 可考慮 propranolol；不套用缺鉀估算</small></span></li></ul></li>
+            <li><span class="mn m2">DKA／HHS</span><ul><li><span class="mn mleaf">K &lt;3.5 暫緩胰島素，先補鉀<small>共識內文 10 mmol/h；UpToDate 門檻 3.3、20–30 mEq/h</small></span></li></ul></li>
+            <li><span class="mn m2">eGFR &lt;30、少尿</span><ul><li><span class="mn mleaf">減量減速、每 1–2 h 測 K<small>保鉀利尿劑須極度謹慎</small></span></li></ul></li>
+            <li><span class="mn m2">心臟病／digoxin</span><ul><li><span class="mn mleaf">心臟病目標 K ≥4.0（綜述）<small>digoxin 無專屬數值，須積極矯正</small></span></li></ul></li>
+            <li><span class="mn m2">肝硬化</span><ul><li><span class="mn mleaf">輕度也矯正，避免肝性腦病變</span></li></ul></li>
+            <li><span class="mn m2">橫紋肌溶解</span><ul><li><span class="mn mleaf">K 可能被掩蓋，每 4–6 h 測 K</span></li></ul></li>
+          </ul></li>
+          <li><span class="mn m1">6 持續腎失鉀</span><ul>
+            <li><span class="mn m2">一般</span><ul><li><span class="mn mleaf">Amiloride 優先；補鉀併用要密切追蹤</span></li></ul></li>
+            <li><span class="mn m2">PA</span><ul><li><span class="mn mleaf">Spironolactone／eplerenone；單側考慮手術</span></li></ul></li>
+            <li><span class="mn m2">Liddle</span><ul><li><span class="mn mleaf">Amiloride 或 triamterene，spironolactone 無效</span></li></ul></li>
+          </ul></li>
+          <li><span class="mn m1">7 監測與目標</span><ul>
+            <li><span class="mn m2">追蹤</span><ul><li><span class="mn mleaf">K 每 2–4 h，至持續 &gt;3.0–3.5 且症狀消失<small>轉移型每 1–2 h</small></span></li></ul></li>
+            <li><span class="mn m2">連續 ECG</span><ul><li><span class="mn mleaf">ECG 變化、心臟高風險、IV &gt;10 mEq/h、反彈風險</span></li></ul></li>
+            <li><span class="mn m2">補足缺口</span><ul><li><span class="mn mleaf">每降 1 mEq/L 約缺 200–400 mEq，數天到數週補足<small>另找出並治療病因</small></span></li></ul></li>
+          </ul></li>
+        </ul></li></ul></div>
+      </div>
+      <p class="note">緊急度分級與部分門檻（如 eGFR &lt;30）是本工具自訂，不是原文定義。完整內容與出處見其他分頁。</p>
+    </div>
+  </section>
+
+  <!-- 5 cases -->
   <section class="pane" id="cases" role="tabpanel" aria-labelledby="tab-cases" hidden>
     <p class="muted small" style="margin-bottom:12px">載入示例會覆蓋目前輸入（可先用「複製摘要」保存）。示例數值為教學用的虛構資料。</p>
     <div class="cases" id="caseList"></div>
   </section>
 
-  <!-- 5 quiz -->
+  <!-- 6 quiz -->
   <section class="pane" id="quiz" role="tabpanel" aria-labelledby="tab-quiz" hidden>
     <div class="qz" id="quizBox"></div>
   </section>
 
-  <!-- 6 refs -->
+  <!-- 7 refs -->
   <section class="pane" id="ref" role="tabpanel" aria-labelledby="tab-ref" hidden>
     <div class="card">
       <h3>參考文獻</h3>
@@ -392,6 +500,7 @@ ol.path li .pl{color:var(--ink-3);font-size:12.5px}
       </ol>
       <h3 style="margin-top:18px">版本紀錄</h3>
       <ul class="plain">
+        <li>2026-11-01：新增「心智圖」分頁（診斷、治療各一張）。</li>
         <li>2026-11-01：核對原文後修正：minibag 範例醫囑改以水稀釋（UpToDate）；心臟病 K 目標註明出處，digoxin 不列專屬數值；轉移型補鉀改以密集監測為主，移除「K ≥3.0 即停」；PA 確認試驗與篩檢依 ES 2025 的有條件建議改寫；DKA 補鉀註明共識內文與 Figure 4 的差異；UpToDate 版本日期更正；修正第 1、3、9、10、13、15、16、17 題。</li>
         <li>2026-11-01：新增「測驗」分頁（20 題單選，交卷後顯示分數與解析）。</li>
         <li>2026-10-04：重寫為逐步引導版。初次接觸只需 K 值；新增「下一步」引導卡（可就地填寫）、待回報機制、暫定鑑別、安全層（Mg、eGFR、口服能力、心臟病/digoxin、DKA）、補鉀/補鎂計畫與範例醫囑、流程總覽高亮、示例病例、資料增補紀錄與摘要複製。PA 依 ES 2025 更新（確認試驗非必要）；DKA 依 2024 共識（K &lt;3.5 暫緩胰島素）。</li>
@@ -1288,10 +1397,10 @@ function copyText(t) {
 let tt; function toast(m) { const el = $('toast'); el.textContent = m; el.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => el.classList.remove('show'), 1800); }
 
 /* tabs */
-const TABS = ['ws', 'tx', 'algo', 'cases', 'quiz', 'ref'];
+const TABS = ['ws', 'tx', 'algo', 'map', 'cases', 'quiz', 'ref'];
 function showTab(t) {
   TABS.forEach(x => { $(x).hidden = x !== t; $('tab-' + x).setAttribute('aria-selected', x === t); $('tab-' + x).tabIndex = x === t ? 0 : -1; });
-  $('status').hidden = t === 'quiz';
+  $('status').hidden = t === 'quiz' || t === 'map';
   $('tab-' + t).scrollIntoView({ block: 'nearest', inline: 'nearest' });
   try { localStorage.setItem(LS + '-tab', t); } catch (e) {}
   window.scrollTo({ top: 0 });
