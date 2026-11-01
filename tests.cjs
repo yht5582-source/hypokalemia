@@ -159,5 +159,78 @@ t('summary includes K, path, and outstanding items', () => {
   const s = { k: 2.4, sym: 'weak' }; const txt = HK.summary(s, ev(s)); assert.ok(/K 2\.4/.test(txt)); assert.ok(/待補/.test(txt));
 });
 
+console.log('Quiz — structure');
+const qm = html.match(/\/\*QUIZ-START\*\/([\s\S]*?)\/\*QUIZ-END\*\//);
+if (!qm) throw new Error('quiz block not found');
+const { QUIZ, QUIZ_FLAT, quizScore } = new Function(qm[1] + ';return { QUIZ, QUIZ_FLAT, quizScore };')();
+t('20 questions, 4 distinct options, valid answer, explanation', () => {
+  assert.equal(QUIZ_FLAT.length, 20);
+  QUIZ_FLAT.forEach((it, i) => {
+    assert.equal(new Set(it.o).size, 4, 'Q' + (i + 1));
+    assert.ok(Number.isInteger(it.a) && it.a >= 0 && it.a < 4, 'Q' + (i + 1));
+    assert.ok(it.q && it.x, 'Q' + (i + 1));
+  });
+});
+t('answer key matches the distributed exam', () => assert.equal(QUIZ_FLAT.map(it => 'ABCD'[it.a]).join(''), 'BDCABCADBCADBCADCBAD'));
+t('score: all right, all wrong, blanks, per-section totals', () => {
+  assert.equal(quizScore(QUIZ_FLAT.map(it => it.a)).right, 20);
+  assert.equal(quizScore(QUIZ_FLAT.map(it => (it.a + 1) % 4)).right, 0);
+  assert.equal(quizScore(QUIZ_FLAT.map(() => null)).right, 0);
+  const r = quizScore(QUIZ_FLAT.map((it, i) => i < 5 ? it.a : null));
+  assert.deepEqual(r.bySec.map(b => [b.right, b.total]), [[5, 5], [0, 5], [0, 6], [0, 4]]);
+});
+
+console.log('Quiz — answers agree with the engine');
+t('Q2 only K 2.8 + ECG changes is not emergent', () => {
+  assert.equal(ev({ k: 2.4, sym: 'none' }).u.lvl, 'emergent');
+  assert.equal(ev({ k: 3.2, ecg: 'arrhythmia' }).u.lvl, 'emergent');
+  assert.equal(ev({ k: 3.0, rhabdo: true }).u.lvl, 'emergent');
+  assert.equal(ev({ k: 2.8, ecg: 'changes' }).u.lvl, 'urgent');
+});
+t('Q3 digoxin target', () => assert.ok(ev({ k: 3.3, ...SAFE, digoxin: true }).tx.target.startsWith('≥4.0')));
+t('Q4 Mg 1.2 → MgSO₄ 2 g', () => assert.ok(ev({ k: 2.9, ...SAFE, mg: 1.2 }).tx.mg[0].includes('MgSO₄ 2 g')));
+t('Q5 eGFR 20 → halve, avoid K-sparing', () => assert.ok(ev({ k: 2.9, ...SAFE, egfr: 20 }).tx.k.some(x => /減半/.test(x) && /避免保鉀/.test(x))));
+t('Q6 K 2.5 → deficit 300–600', () => assert.deepEqual(ev({ k: 2.5, ...SAFE, h_diarrhea: true }).tx.deficit, { lo: 300, hi: 600 }));
+t('Q7 NPO peripheral order', () => assert.ok(ev({ k: 2.8, ...SAFE, po: 'no', access: 'periph' }).tx.orders.some(o => /0\.9% NaCl 1000 mL \+ KCl 40 mEq.*250 mL\/h/.test(o))));
+t('Q8 alkalosis → KCl, 40%', () => assert.ok(/KCl.*40%/.test(ev({ k: 2.9, ...SAFE, h_vomit: true, hco3: 34, bp: 'low' }).tx.prep[0])));
+t('Q9 DKA K 3.1 → hold insulin, 10 mmol/h', () => assert.ok(ev({ k: 3.1, ...SAFE, dka: true }).tx.special.some(x => /暫緩胰島素/.test(x) && /10 mmol\/h/.test(x))));
+t('Q10 TPP → low dose, propranolol, no deficit', () => {
+  const r = ev({ k: 2.1, ...SAFE, sym: 'paralysis', ukcr: 8, hco3: 24, bp: 'low', tsh: 'low' });
+  assert.equal(status(r, 'tpp'), 'likely'); assert.equal(r.tx.deficit, null);
+  assert.ok(r.tx.k.some(x => /≤10 mEq\/h/.test(x) && /K ≥3\.0/.test(x))); assert.ok(r.tx.k.some(x => /propranolol/.test(x)));
+});
+t('Q11 UK 9 / UCr 120 → 7.5, extrarenal', () => { const d = HK.derive({ uk: 9, ucr: 120 }); assert.equal(d.ukcr, 7.5); assert.equal(d.route, 'extra'); });
+t('Q12 vomiting pattern, Gitelman not raised', () => {
+  const r = ev({ k: 2.7, ...SAFE, hco3: 36, bp: 'low', ukcr: 25, ucl: 8, upH: 7.6 });
+  assert.equal(status(r, 'upperGI'), 'possible'); assert.equal(status(r, 'gitelman'), undefined); assert.equal(status(r, 'pa'), undefined);
+});
+t('Q13 extrarenal alkalosis + low UCl → covert vomiting raised', () => {
+  const r = ev({ k: 3.0, ...SAFE, hco3: 34, bp: 'low', ukcr: 6, ucl: 10 });
+  assert.equal(status(r, 'upperGI'), 'possible'); assert.equal(status(r, 'lowerGI'), undefined);
+});
+t('Q14 acidosis → KCl first, then alkali', () => assert.ok(ev({ k: 2.3, ...SAFE, h_diarrhea: true, hco3: 12, ukcr: 6, bp: 'low' }).tx.prep.some(x => /先用 KCl 拉到安全值/.test(x))));
+t('Q15 AG 10, UAG +20, dRTA likely', () => {
+  const r = ev({ k: 2.8, ...SAFE, na: 138, cl: 112, hco3: 16, uk: 30, ucr: 100, una: 40, ucl: 50, upH: 6.5, bp: 'low' });
+  assert.equal(r.d.ukcr, 30); assert.equal(r.d.ag, 10); assert.equal(r.d.uag, 20);
+  assert.equal(status(r, 'dRTA'), 'likely'); assert.equal(status(r, 'pRTA'), 'unlikely');
+});
+t('Q16 salt-wasting → asks diuretic screen', () => {
+  const r = ev({ k: 2.7, ...SAFE, mg: 1.3, bp: 'low', hco3: 33, ukcr: 35, ucl: 60, uca: 'low' });
+  assert.ok(askKeys(r).includes('diurscreen')); assert.equal(status(r, 'gitelman'), 'possible');
+});
+t('Q17 lh pattern → PA likely, MRA first-line', () => {
+  const r = ev({ k: 3.0, ...SAFE, bp: 'high', hco3: 31, ukcr: 30, raas: 'lh' });
+  assert.equal(status(r, 'pa'), 'likely'); assert.ok(/確認試驗不再必要/.test(HK.C.find(c => c.id === 'pa').next)); assert.ok(/MRA/.test(HK.C.find(c => c.id === 'pa').tx));
+});
+t('Q18 negative screen → repeat after K repletion', () => assert.ok(ev({ k: 3.1, ...SAFE, bp: 'high', raas: 'normal' }).cands.find(c => c.id === 'pa').why.some(x => /補鉀後應重驗/.test(x))));
+t('Q19 hh pattern → secondary, renal artery imaging', () => {
+  assert.equal(status(ev({ k: 3.2, ...SAFE, bp: 'high', raas: 'hh' }), 'secAldo'), 'likely');
+  assert.ok(/CTA/.test(HK.C.find(c => c.id === 'secAldo').next));
+});
+t('Q20 ll pattern + family → Liddle, amiloride', () => {
+  assert.equal(status(ev({ k: 3.0, ...SAFE, bp: 'high', hco3: 32, ukcr: 28, raas: 'll', h_family: true }), 'liddle'), 'likely');
+  assert.ok(/Amiloride/.test(HK.C.find(c => c.id === 'liddle').tx) && /spironolactone 無效/.test(HK.C.find(c => c.id === 'liddle').tx));
+});
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -178,6 +178,25 @@ ol.path li .pl{color:var(--ink-3);font-size:12.5px}
 .case{display:grid;gap:8px;align-content:start}
 .refs{padding-left:20px;margin:0;display:grid;gap:8px;font-size:13.8px}
 .refs a{color:var(--accent)}
+.qz{display:grid;gap:12px;max-width:860px}
+.qz-sec{font-family:var(--f-display);font-size:16.5px;font-weight:700;margin-top:10px}
+.qz-bar{display:flex;gap:10px 14px;align-items:center;flex-wrap:wrap}
+.q{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:8px;scroll-margin-top:12px}
+.q.missing{border-color:var(--stop);box-shadow:0 0 0 1px var(--stop) inset}
+.q .qt{font-weight:500}
+.q .qn{font-family:var(--f-mono);color:var(--accent);margin-right:6px}
+.opts{display:grid;gap:6px}
+.opt{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line-2);border-radius:8px;padding:7px 10px;cursor:pointer;font-size:14px;line-height:1.5}
+.opt:hover{border-color:var(--accent)}
+.opt input{margin-top:4px;accent-color:var(--accent);flex:none}
+.opt .ol{font-family:var(--f-mono);color:var(--ink-3)}
+.opt .tag{font-size:12px;font-weight:700;white-space:nowrap;margin-left:auto;padding-left:8px}
+.opt.right{background:var(--go-soft);border-color:var(--go)} .opt.right .tag{color:var(--go)}
+.opt.wrong{background:var(--stop-soft);border-color:var(--stop)} .opt.wrong .tag{color:var(--stop)}
+.q.done .opt{cursor:default} .q.done .opt:hover{border-color:var(--line-2)} .q.done .opt.right:hover{border-color:var(--go)} .q.done .opt.wrong:hover{border-color:var(--stop)}
+.qx{font-size:13.8px;border-left:3px solid var(--accent);padding:4px 0 4px 12px}
+.qx b.ok{color:var(--go)} .qx b.no{color:var(--stop)}
+.score{font-family:var(--f-mono);font-size:30px;line-height:1.1}
 .disclaimer{margin-top:22px;font-size:13px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:14px;max-width:90ch}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);font-size:13.5px;padding:8px 16px;border-radius:999px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
 .toast.show{opacity:1}
@@ -204,7 +223,8 @@ ol.path li .pl{color:var(--ink-3);font-size:12.5px}
     <button class="tab" role="tab" id="tab-tx" aria-controls="tx" data-t="tx"><b>2</b>補鉀治療計畫</button>
     <button class="tab" role="tab" id="tab-algo" aria-controls="algo" data-t="algo"><b>3</b>鑑別流程總覽</button>
     <button class="tab" role="tab" id="tab-cases" aria-controls="cases" data-t="cases"><b>4</b>示例病例</button>
-    <button class="tab" role="tab" id="tab-ref" aria-controls="ref" data-t="ref"><b>5</b>參考文獻</button>
+    <button class="tab" role="tab" id="tab-quiz" aria-controls="quiz" data-t="quiz"><b>5</b>測驗</button>
+    <button class="tab" role="tab" id="tab-ref" aria-controls="ref" data-t="ref"><b>6</b>參考文獻</button>
   </nav>
 
   <div class="status" id="status" aria-live="polite"></div>
@@ -350,7 +370,12 @@ ol.path li .pl{color:var(--ink-3);font-size:12.5px}
     <div class="cases" id="caseList"></div>
   </section>
 
-  <!-- 5 refs -->
+  <!-- 5 quiz -->
+  <section class="pane" id="quiz" role="tabpanel" aria-labelledby="tab-quiz" hidden>
+    <div class="qz" id="quizBox"></div>
+  </section>
+
+  <!-- 6 refs -->
   <section class="pane" id="ref" role="tabpanel" aria-labelledby="tab-ref" hidden>
     <div class="card">
       <h3>參考文獻</h3>
@@ -366,6 +391,7 @@ ol.path li .pl{color:var(--ink-3);font-size:12.5px}
       </ol>
       <h3 style="margin-top:18px">版本紀錄</h3>
       <ul class="plain">
+        <li>2026-11-01：新增「測驗」分頁（20 題單選，交卷後顯示分數與解析）。</li>
         <li>2026-10-04：重寫為逐步引導版。初次接觸只需 K 值；新增「下一步」引導卡（可就地填寫）、待回報機制、暫定鑑別、安全層（Mg、eGFR、口服能力、心臟病/digoxin、DKA）、補鉀/補鎂計畫與範例醫囑、流程總覽高亮、示例病例、資料增補紀錄與摘要複製。PA 依 ES 2025 更新（確認試驗非必要）；DKA 依 2024 共識（K &lt;3.5 暫緩胰島素）。</li>
         <li>2026-06-27：初版分層診斷樹。</li>
       </ul>
@@ -1259,9 +1285,11 @@ function copyText(t) {
 let tt; function toast(m) { const el = $('toast'); el.textContent = m; el.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => el.classList.remove('show'), 1800); }
 
 /* tabs */
-const TABS = ['ws', 'tx', 'algo', 'cases', 'ref'];
+const TABS = ['ws', 'tx', 'algo', 'cases', 'quiz', 'ref'];
 function showTab(t) {
   TABS.forEach(x => { $(x).hidden = x !== t; $('tab-' + x).setAttribute('aria-selected', x === t); $('tab-' + x).tabIndex = x === t ? 0 : -1; });
+  $('status').hidden = t === 'quiz';
+  $('tab-' + t).scrollIntoView({ block: 'nearest', inline: 'nearest' });
   try { localStorage.setItem(LS + '-tab', t); } catch (e) {}
   window.scrollTo({ top: 0 });
 }
@@ -1294,7 +1322,150 @@ function loadCase(i) {
   renderAll(); showTab('ws'); toast('已載入示例：' + c.t);
 }
 
-renderSheet(); renderCases(); renderAll();
+/* quiz */
+/*QUIZ-START*/
+const QUIZ = [
+  { s: '確認與安全評估', items: [
+    { q: '急性白血病病人，WBC 180,000/µL，檢體延遲處理後 K 2.6，無症狀，ECG 正常。下一步最適當的是？',
+      o: ['立即靜脈補鉀', '快速分離血漿或用血液氣體分析儀重測 K', '驗 Spot UK/UCr', '驗腎素與醛固酮'], a: 1,
+      x: 'WBC 極高加上檢體延遲，細胞會在試管內攝取鉀，應先重測，不需直接補鉀。' },
+    { q: '下列何者依本工具分級「不屬於」緊急？',
+      o: ['K 2.4，無症狀', 'K 3.2，合併 VT', 'K 3.0，合併橫紋肌溶解', 'K 2.8，ECG 有 U 波與 QT 延長'], a: 3,
+      x: 'K <2.5、心律不整、麻痺或呼吸肌無力、橫紋肌溶解屬緊急；K <3.0 或 ECG 變化屬「需積極補充」。' },
+    { q: '心衰竭病人服用 digoxin，K 3.3，無症狀。血鉀目標應為？',
+      o: ['≥3.0 mEq/L', '≥3.5 mEq/L', '≥4.0 mEq/L', '≥5.0 mEq/L'], a: 2,
+      x: '心臟病或使用 digoxin 時目標 K ≥4.0，因低鉀會加重 digoxin 毒性與心律不整。' },
+    { q: '病人口服 KCl 兩天後 K 仍為 2.9，Mg 1.2 mg/dL，長期使用 PPI。最適當的處置是？',
+      o: ['與補鉀同時或優先補鎂，例如 MgSO₄ 2 g IV，輸注 ≥1 h', '只增加 KCl 劑量，Mg 暫不處理', '改用 K citrate', '開始 amiloride'], a: 0,
+      x: 'Mg <1.7 mg/dL 為低鎂，單補鉀難以矯正，也會增加 torsades 風險。' },
+    { q: 'K 2.9，eGFR 20。下列處置何者正確？',
+      o: ['依一般劑量補充，每日測 K', '降低劑量與速率（例如減半），每 1–2 h 測 K，避免保鉀利尿劑', '加 spironolactone，減少補鉀量', '因高血鉀風險，完全不補鉀'], a: 1,
+      x: 'eGFR <30 或少尿時須減量並密集追蹤，同時避免保鉀利尿劑。' }
+  ] },
+  { s: '補鉀治療', items: [
+    { q: '慢性腹瀉病人 K 2.5，目標 K 4.0。依本工具估算，總缺鉀量約為？',
+      o: ['50–100 mEq', '100–200 mEq', '300–600 mEq', '800–1000 mEq'], a: 2,
+      x: '(4.0−2.5) × 200–400 = 300–600 mEq。DKA 與轉移型低血鉀不套用此估算。' },
+    { q: 'K 2.8，NPO，只有周邊靜脈，ECG 正常。下列哪一張醫囑最適當？',
+      o: ['0.9% NaCl 1000 mL + KCl 40 mEq，250 mL/h，使用輸液幫浦', 'D5W 1000 mL + KCl 40 mEq，250 mL/h', '0.9% NaCl 100 mL + KCl 20 mEq，經周邊 IV 1 h', '0.9% NaCl 1000 mL + KCl 80 mEq，125 mL/h'], a: 0,
+      x: '40 mEq/L × 250 mL/h = 10 mEq/h。B 的 dextrose 會刺激胰島素分泌，使 K 再降；C 超過周邊 minibag ≤10 mEq；D 超過 1000 mL ≤60 mEq。' },
+    { q: '嘔吐造成代謝性鹼中毒與低血鉀，首選鉀鹽及理由是？',
+      o: ['K citrate，可矯正缺氯', 'K bicarbonate，保留率最高', 'K phosphate，可矯正鹼中毒', 'KCl，鹼中毒時非氯鉀鹽的保留量僅約 KCl 的 40%'], a: 3,
+      x: '鹼中毒常合併缺氯，應首選 KCl。' },
+    { q: 'DKA 病人 K 3.1，血糖 480 mg/dL，pH 7.1。依 2024 共識，下列何者最適當？',
+      o: ['立即開始胰島素滴注，同時補鉀', '暫緩胰島素，先補 KCl（起始 10 mmol/h），K >3.5 再開始胰島素', '先給 bicarbonate，再開始胰島素', '先給胰島素，K <2.5 才補鉀'], a: 1,
+      x: 'K <3.5 先暫緩胰島素。K 很低或持續下降時可提高到 20–30 mEq/h，須有中心靜脈與連續 ECG。UpToDate 的門檻為 >3.3。' },
+    { q: '25 歲男性飽餐後四肢麻痺，K 2.1，UK/UCr 8 mEq/g，HCO₃⁻ 24，TSH 抑制。最適當的處置是？',
+      o: ['依缺鉀公式補足 300–400 mEq', 'KCl 40 mEq/h，直到 K ≥4.0', '少量 KCl（≤10 mEq/h），每 1–2 h 測 K，症狀緩解或 K ≥3.0 即停，可考慮 propranolol', '不補鉀，僅觀察'], a: 2,
+      x: '轉移型體內總鉀不缺，週期性麻痺補鉀後 40–60% 會反彈成高血鉀。UK/UCr <22 且酸鹼正常支持此診斷。' }
+  ] },
+  { s: '尿鉀定位與鑑別', items: [
+    { q: 'K 3.0，Spot UK 9 mEq/L，UCr 120 mg/dL。UK/UCr 與解讀為何？',
+      o: ['7.5 mEq/g，非腎性', '7.5 mEq/g，腎失鉀', '13.3 mEq/g，腎失鉀', '75 mEq/g，腎失鉀'], a: 0,
+      x: '100 × 9 ÷ 120 = 7.5 mEq/g，低於 13 為非腎性。24 h 尿鉀的切點：>30 腎失鉀，<25 非腎性，其間為灰色地帶。' },
+    { q: 'K 2.7，HCO₃⁻ 36，血壓偏低，UK/UCr 25，尿氯 8，尿 pH 7.6。最可能的診斷是？',
+      o: ['Gitelman 症候群', '正在使用利尿劑', '原發性醛固酮增多症', '活動性嘔吐'], a: 3,
+      x: '活動性嘔吐時重碳酸尿使 UK/UCr 偏高，靠尿氯 <20 與尿 pH >7 辨識。' },
+    { q: '年輕女性否認所有病史。K 3.0，HCO₃⁻ 34，血壓偏低，UK/UCr 6，尿氯 10，尿 Na/Cl 比約 2。最可能的診斷是？',
+      o: ['濫用瀉藥', '隱匿催吐', 'Bartter 症候群', 'Liddle 症候群'], a: 1,
+      x: '尿鉀低、鹼中毒、低尿氯，且尿 Na/Cl 明顯 >1，提示隱匿催吐；濫用瀉藥的比值約 0.4。' },
+    { q: '嚴重腹瀉，K 2.3，HCO₃⁻ 12，UK/UCr 6。補鉀策略何者正確？',
+      o: ['先給 bicarbonate 矯正酸中毒，再補鉀', '全程只用 K phosphate', '先用 KCl 把 K 拉到安全值，再用 K citrate 或 bicarbonate', '改用 D5W 稀釋 KCl，減少靜脈刺激'], a: 2,
+      x: 'K 很低時若先補鹼，K 會更低。靜脈的非氯鉀鹽只有 K acetate，dextrose 也應避免。' },
+    { q: 'K 2.8，Na 138，Cl 112，HCO₃⁻ 16。UK 30，UCr 100，UNa 40，UCl 50，尿 pH 6.5。最可能的診斷是？',
+      o: ['遠端 RTA', '酮酸中毒或 toluene', '下消化道流失', '近端 RTA'], a: 0,
+      x: 'UK/UCr 30 為腎失鉀；AG = 10 正常；UAG = 40+30−50 = +20；酸中毒下尿 pH >5.5。' },
+    { q: 'K 2.7，Mg 1.3，血壓 105/65，HCO₃⁻ 33，UK/UCr 35，尿氯 60，低尿鈣，否認用藥。診斷 Gitelman 症候群前，下一步最該做的是？',
+      o: ['開始 MRA', '驗腎素與醛固酮', '驗 TSH', '尿液利尿劑篩檢'], a: 3,
+      x: 'Thiazide 可完全模擬 Gitelman，loop 利尿劑可完全模擬 Bartter，須先篩檢排除。' }
+  ] },
+  { s: '高血壓合併低血鉀', items: [
+    { q: '52 歲高血壓，K 3.0，HCO₃⁻ 31，UK/UCr 30。腎素抑制、醛固酮升高、ARR 升高。依 ES 2025，何者正確？',
+      o: ['必須完成確認試驗才能診斷', '腎素應升高才符合 PA', '可診斷 PA，確認試驗非必要；打算手術者再安排 CT 與 AVS，藥物首選 MRA', '首選藥物為 amiloride，MRA 無效'], a: 2,
+      x: 'ES 2025：腎素抑制、醛固酮升高、ARR 升高即可診斷；僅中間機率且考慮手術時才做確認試驗。' },
+    { q: '高血壓合併 K 3.1，ARR 篩檢結果為陰性。下一步最適當的是？',
+      o: ['排除 PA，不再追蹤', '補鉀後重驗', '直接做 AVS', '直接做腎上腺切除'], a: 1,
+      x: '未校正的低血鉀會壓低醛固酮，造成偽陰性。' },
+    { q: '58 歲高血壓，有腹部血管雜音，K 3.2，未用利尿劑。腎素與醛固酮皆升高。最適當的下一步是？',
+      o: ['腎動脈超音波、CTA 或 MRA', '1 mg dexamethasone 抑制試驗', 'SCNN1A/B/G 基因檢測', '腎上腺靜脈取樣'], a: 0,
+      x: '腎素與醛固酮皆高屬續發性，考慮腎動脈狹窄、惡性高血壓、renin 腫瘤，或高血壓病人使用利尿劑。' },
+    { q: '24 歲高血壓，母親有相同病史。K 3.0，UK/UCr 28，HCO₃⁻ 32，腎素與醛固酮皆低，無甘草、azole、類固醇暴露，也無 Cushing 外觀。首選藥物是？',
+      o: ['Spironolactone', 'Eplerenone', 'Hydrochlorothiazide', 'Amiloride'], a: 3,
+      x: '排除外源暴露與 Cushing 後，最符合 Liddle 症候群，應使用 amiloride 或 triamterene（spironolactone 無效），並安排基因檢測。' }
+  ] }
+];
+const QUIZ_FLAT = QUIZ.flatMap(sec => sec.items);
+/* answers: array indexed by question, option index or null */
+function quizScore(ans) {
+  let n = 0;
+  const bySec = QUIZ.map(sec => {
+    const start = n; n += sec.items.length;
+    return { s: sec.s, total: sec.items.length, right: sec.items.filter((it, i) => ans[start + i] === it.a).length };
+  });
+  return { right: bySec.reduce((a, b) => a + b.right, 0), total: n, bySec };
+}
+/*QUIZ-END*/
+const QLS = LS + '-quiz';
+let Q = (() => { try { const x = JSON.parse(localStorage.getItem(QLS)); if (x && Array.isArray(x.a) && x.a.length === QUIZ_FLAT.length) return x; } catch (e) {} return { a: QUIZ_FLAT.map(() => null), done: false }; })();
+const saveQuiz = () => { try { localStorage.setItem(QLS, JSON.stringify(Q)); } catch (e) {} };
+const LET = 'ABCD';
+function quizQuestionHTML(it, i) {
+  const pick = Q.a[i];
+  const opts = it.o.map((o, j) => {
+    const cls = Q.done ? (j === it.a ? ' right' : j === pick ? ' wrong' : '') : '';
+    const tag = !Q.done ? '' : j === it.a ? '<span class="tag">正解</span>' : j === pick ? '<span class="tag">你的答案</span>' : '';
+    return `<label class="opt${cls}"><input type="radio" name="q${i}" value="${j}" data-q="${i}" ${pick === j ? 'checked' : ''} ${Q.done ? 'disabled' : ''}><span><span class="ol">${LET[j]}.</span> ${esc(o)}</span>${tag}</label>`;
+  }).join('');
+  const fb = Q.done ? `<p class="qx">${pick === it.a ? '<b class="ok">答對</b>' : `<b class="no">答錯，正解 ${LET[it.a]}</b>`}　${esc(it.x)}</p>` : '';
+  return `<div class="q${Q.done ? ' done' : ''}" id="q${i}" role="radiogroup" aria-labelledby="qt${i}"><p class="qt" id="qt${i}"><span class="qn">${i + 1}.</span>${esc(it.q)}</p><div class="opts">${opts}</div>${fb}</div>`;
+}
+function renderQuiz() {
+  let i = 0, body = '';
+  QUIZ.forEach(sec => {
+    body += `<h2 class="qz-sec">${esc(sec.s)}</h2>`;
+    sec.items.forEach(it => { body += quizQuestionHTML(it, i++); });
+  });
+  let head;
+  if (Q.done) {
+    const r = quizScore(Q.a);
+    head = `<div class="card" id="quizResult" tabindex="-1"><h3>測驗結果</h3><p class="score">${r.right} / ${r.total}</p><div class="tablebox" style="margin-top:8px"><table><thead><tr><th>主題</th><th>答對</th></tr></thead><tbody>${r.bySec.map(b => `<tr><td>${esc(b.s)}</td><td class="mono">${b.right} / ${b.total}</td></tr>`).join('')}</tbody></table></div><div class="qz-bar noprint" style="margin-top:10px"><button class="btn" type="button" data-quiz="reset">重新作答</button></div></div>`;
+  } else {
+    head = `<div class="card"><h3>低血鉀症測驗 <span class="pill ev">20 題單選</span></h3><p class="small muted">全部作答後交卷，會顯示分數與每題解析。題目依本工具的內容撰寫，供教學使用；病例皆為虛構，若無特別說明，病人皆為成人、腎功能正常。作答紀錄只存在這台裝置的瀏覽器。</p></div>`;
+  }
+  const foot = Q.done ? '' : `<div class="qz-bar noprint"><button class="btn primary" type="button" data-quiz="submit">交卷</button><span class="small muted" id="quizProg" aria-live="polite"></span></div>`;
+  $('quizBox').innerHTML = head + body + foot;
+  quizProgress();
+}
+function quizProgress() {
+  const el = $('quizProg'); if (!el) return;
+  el.textContent = `已答 ${Q.a.filter(x => x !== null).length} / ${Q.a.length} 題`;
+}
+$('quizBox').addEventListener('change', e => {
+  const r = e.target.closest('input[data-q]'); if (!r || Q.done) return;
+  const i = Number(r.dataset.q);
+  Q.a[i] = Number(r.value); saveQuiz(); quizProgress();
+  $('q' + i).classList.remove('missing');
+});
+$('quizBox').addEventListener('click', e => {
+  const b = e.target.closest('[data-quiz]'); if (!b) return;
+  if (b.dataset.quiz === 'submit') {
+    const miss = Q.a.map((x, i) => x === null ? i : -1).filter(i => i >= 0);
+    if (miss.length) {
+      miss.forEach(i => $('q' + i).classList.add('missing'));
+      toast(`還有 ${miss.length} 題未作答`);
+      $('q' + miss[0]).scrollIntoView({ block: 'start' });
+      $('q' + miss[0]).querySelector('input').focus({ preventScroll: true });
+      return;
+    }
+    Q.done = true; saveQuiz(); renderQuiz();
+    window.scrollTo({ top: 0 }); $('quizResult').focus({ preventScroll: true });
+  } else {
+    Q = { a: QUIZ_FLAT.map(() => null), done: false }; saveQuiz(); renderQuiz();
+    window.scrollTo({ top: 0 });
+  }
+});
+
+renderSheet(); renderCases(); renderAll(); renderQuiz();
 (() => { let t = 'ws'; try { t = localStorage.getItem(LS + '-tab') || 'ws'; } catch (e) {} showTab(TABS.includes(t) ? t : 'ws'); })();
 document.querySelectorAll('#sheet details.layer').forEach((dt, i) => { if (i < 2) dt.open = true; });
 </script>
