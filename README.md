@@ -35,7 +35,7 @@ node tests.cjs
 
 ## 主要參考
 
-- UpToDate（Mount DB）：Evaluation of the adult patient with hypokalemia；Causes of hypokalemia in adults；Clinical manifestations and treatment of hypokalemia in adults（2025–2026 版）
+- UpToDate（Mount DB）：Evaluation of the adult patient with hypokalemia；Causes of hypokalemia in adults；Clinical manifestations and treatment of hypokalemia in adults（文獻回顧至 2026-05）
 - Endocrine Society. Primary Aldosteronism Clinical Practice Guideline, 2025
 - ADA/EASD/JBDS/AACE/DTS. Hyperglycemic crises in adults with diabetes: consensus report. Diabetes Care 2024
 - KDIGO Gitelman syndrome consensus, Kidney Int 2017

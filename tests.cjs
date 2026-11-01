@@ -85,7 +85,7 @@ t('hypertension → asks renin/aldosterone; PA possible before RAAS', () => {
 });
 t('low renin + high aldo → PA likely (ES 2025: no mandatory confirmatory test)', () => {
   const r = ev({ k: 2.6, ...SAFE, ukcr: 50, hco3: 31, bp: 'high', raas: 'lh' }); assert.equal(r.lead[0].id, 'pa');
-  assert.ok(/確認試驗不再必要/.test(r.lead[0].next));
+  assert.ok(/中間機率/.test(r.lead[0].next));
 });
 t('PA "normal" screen with hypokalemia → retest after K correction', () => assert.ok(ev({ k: 2.6, ...SAFE, ukcr: 50, hco3: 31, bp: 'high', raas: 'normal' }).cands.find(c => c.id === 'pa').why.some(w => /補鉀後/.test(w))));
 t('high renin + high aldo → secondary hyperaldosteronism', () => assert.equal(ev({ k: 2.6, ...SAFE, ukcr: 50, hco3: 31, bp: 'high', raas: 'hh' }).lead[0].id, 'secAldo'));
@@ -150,7 +150,14 @@ t('alkalosis → KCl', () => assert.ok(ev({ k: 2.9, ...SAFE, ukcr: 40, hco3: 33,
 t('low Mg → magnesium replacement + order', () => { const tx = ev({ k: 2.9, ...SAFE, mg: 1.3 }).tx; assert.ok(tx.mg[0].includes('MgSO₄')); assert.ok(tx.orders.some(o => /MgSO₄/.test(o))); });
 t('Mg unknown → prompt to measure', () => assert.ok(ev({ k: 2.9 }).tx.mg[0].includes('尚未驗 Mg')));
 t('eGFR <30 → reduce dose/rate, avoid K-sparing', () => assert.ok(ev({ k: 2.6, ...SAFE, egfr: 20 }).tx.k.some(x => /減半/.test(x) && /保鉀/.test(x))));
-t('cardiac/digoxin → target ≥4.0', () => assert.ok(ev({ k: 3.3, ...SAFE, digoxin: true }).tx.target.startsWith('≥4.0')));
+t('cardiac → target ≥4.0; digoxin alone has no numeric target', () => {
+  assert.ok(ev({ k: 3.3, ...SAFE, cardiac: true }).tx.target.startsWith('≥4.0'));
+  assert.ok(!/≥4\.0/.test(ev({ k: 3.3, ...SAFE, digoxin: true }).tx.target));
+});
+t('peripheral minibag and shift orders use water, not saline', () => {
+  assert.ok(ev({ k: 2.8, ...SAFE, po: 'no', access: 'periph' }).tx.orders.some(o => /KCl 10 mEq \+ 水 100 mL/.test(o)));
+  assert.ok(ev({ k: 2.1, ...SAFE, sym: 'paralysis', ukcr: 8, hco3: 24, bp: 'low', tsh: 'low' }).tx.orders.some(o => /KCl 10 mEq \+ 水 100 mL/.test(o)));
+});
 t('renal wasting (PA) → MRA / K-sparing advice', () => assert.ok(ev({ k: 2.6, ...SAFE, ukcr: 50, hco3: 31, bp: 'high', raas: 'lh', evidence: 'pa' }).tx.follow.some(x => /spironolactone/.test(x))));
 t('central access order uses 20 mEq/100 mL', () => assert.ok(ev({ k: 2.2, ...SAFE, access: 'central' }).tx.orders.some(o => /20 mEq \+ 水 100 mL/.test(o))));
 
@@ -187,7 +194,7 @@ t('Q2 only K 2.8 + ECG changes is not emergent', () => {
   assert.equal(ev({ k: 3.0, rhabdo: true }).u.lvl, 'emergent');
   assert.equal(ev({ k: 2.8, ecg: 'changes' }).u.lvl, 'urgent');
 });
-t('Q3 digoxin target', () => assert.ok(ev({ k: 3.3, ...SAFE, digoxin: true }).tx.target.startsWith('≥4.0')));
+t('Q3 heart failure + digoxin target', () => assert.ok(ev({ k: 3.3, ...SAFE, cardiac: true, digoxin: true }).tx.target.startsWith('≥4.0')));
 t('Q4 Mg 1.2 → MgSO₄ 2 g', () => assert.ok(ev({ k: 2.9, ...SAFE, mg: 1.2 }).tx.mg[0].includes('MgSO₄ 2 g')));
 t('Q5 eGFR 20 → halve, avoid K-sparing', () => assert.ok(ev({ k: 2.9, ...SAFE, egfr: 20 }).tx.k.some(x => /減半/.test(x) && /避免保鉀/.test(x))));
 t('Q6 K 2.5 → deficit 300–600', () => assert.deepEqual(ev({ k: 2.5, ...SAFE, h_diarrhea: true }).tx.deficit, { lo: 300, hi: 600 }));
@@ -197,13 +204,14 @@ t('Q9 DKA K 3.1 → hold insulin, 10 mmol/h', () => assert.ok(ev({ k: 3.1, ...SA
 t('Q10 TPP → low dose, propranolol, no deficit', () => {
   const r = ev({ k: 2.1, ...SAFE, sym: 'paralysis', ukcr: 8, hco3: 24, bp: 'low', tsh: 'low' });
   assert.equal(status(r, 'tpp'), 'likely'); assert.equal(r.tx.deficit, null);
-  assert.ok(r.tx.k.some(x => /≤10 mEq\/h/.test(x) && /K ≥3\.0/.test(x))); assert.ok(r.tx.k.some(x => /propranolol/.test(x)));
+  assert.ok(r.tx.k.some(x => /40% 發生高血鉀/.test(x))); assert.ok(!r.tx.k.some(x => /K ≥3\.0 即停/.test(x))); assert.ok(r.tx.k.some(x => /propranolol/.test(x)));
 });
 t('Q11 UK 9 / UCr 120 → 7.5, extrarenal', () => { const d = HK.derive({ uk: 9, ucr: 120 }); assert.equal(d.ukcr, 7.5); assert.equal(d.route, 'extra'); });
 t('Q12 vomiting pattern, Gitelman not raised', () => {
   const r = ev({ k: 2.7, ...SAFE, hco3: 36, bp: 'low', ukcr: 25, ucl: 8, upH: 7.6 });
   assert.equal(status(r, 'upperGI'), 'possible'); assert.equal(status(r, 'gitelman'), undefined); assert.equal(status(r, 'pa'), undefined);
 });
+t('Q13 stem carries the source Na/Cl ratio', () => assert.ok(/尿 Na\/Cl 比約 5/.test(QUIZ_FLAT[12].q)));
 t('Q13 extrarenal alkalosis + low UCl → covert vomiting raised', () => {
   const r = ev({ k: 3.0, ...SAFE, hco3: 34, bp: 'low', ukcr: 6, ucl: 10 });
   assert.equal(status(r, 'upperGI'), 'possible'); assert.equal(status(r, 'lowerGI'), undefined);
@@ -220,7 +228,7 @@ t('Q16 salt-wasting → asks diuretic screen', () => {
 });
 t('Q17 lh pattern → PA likely, MRA first-line', () => {
   const r = ev({ k: 3.0, ...SAFE, bp: 'high', hco3: 31, ukcr: 30, raas: 'lh' });
-  assert.equal(status(r, 'pa'), 'likely'); assert.ok(/確認試驗不再必要/.test(HK.C.find(c => c.id === 'pa').next)); assert.ok(/MRA/.test(HK.C.find(c => c.id === 'pa').tx));
+  assert.equal(status(r, 'pa'), 'likely'); assert.ok(/抑制（確認）試驗只建議用於中間機率/.test(HK.C.find(c => c.id === 'pa').next)); assert.ok(/MRA/.test(HK.C.find(c => c.id === 'pa').tx));
 });
 t('Q18 negative screen → repeat after K repletion', () => assert.ok(ev({ k: 3.1, ...SAFE, bp: 'high', raas: 'normal' }).cands.find(c => c.id === 'pa').why.some(x => /補鉀後應重驗/.test(x))));
 t('Q19 hh pattern → secondary, renal artery imaging', () => {
